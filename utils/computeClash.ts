@@ -1,14 +1,7 @@
-import { Clasher, CoinNumberState } from "./entities"
+import { Clasher, CoinNumberState, type ClashResult } from "./entities"
 import { binomialPmf, matrixDot, matrixInverse, matrixSubtract } from "./math"
 
-export default (
-  p1: Clasher,
-  p2: Clasher
-): {
-  winRate: number
-  states: CoinNumberState[]
-  stochasticMatrix: number[][]
-} => {
+export default (p1: Clasher, p2: Clasher): ClashResult => {
   const numStates = (p1.numCoins + 1) * (p2.numCoins + 1) - 1
   const states: CoinNumberState[] = []
 
@@ -68,9 +61,9 @@ export default (
         const probabilities: number[] = []
 
         for (let p1Heads = 0; p1Heads <= fromState.p1; p1Heads++) {
-          const p1ClashPow = p1.clashPower(fromState.p1, p1Heads, p2)
+          const p1ClashPow = p1.clashPower(p1Heads, p2)
           for (let p2Heads = 0; p2Heads <= fromState.p2; p2Heads++) {
-            const p2ClashPow = p2.clashPower(fromState.p2, p2Heads, p1)
+            const p2ClashPow = p2.clashPower(p2Heads, p1)
             if (
               (isP1Equal && !isP2Equal && p1ClashPow > p2ClashPow) ||
               (isP2Equal && !isP1Equal && p1ClashPow < p2ClashPow) ||

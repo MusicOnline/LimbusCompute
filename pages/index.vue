@@ -48,6 +48,40 @@ function coinNumberStateToLabel({ p1, p2 }: CoinNumberState): string {
   return `${p1},${p2}`
 }
 
+function modifyStochasticMatrixForPresentation(
+  result: ClashResult
+): number[][] {
+  return result.stochasticMatrix.map((row, i) =>
+    row.map((prob, j) => {
+      const fromState = result.states[i]
+      const toState = result.states[j]
+      if (
+        (fromState.p1 === 0 &&
+          toState.p1 === 0 &&
+          fromState.p2 - toState.p2 === 1) ||
+        (fromState.p2 === 0 &&
+          toState.p2 === 0 &&
+          fromState.p1 - toState.p1 === 1) ||
+        (toState.some((x) => x === 0) && toState.sum() > 1)
+      )
+        return 0
+      if (toState.p1 === 0 && toState.p2 === 1 && fromState.p1 === 1) {
+        const index = result.states.findIndex(
+          (state) => state.p1 === 0 && state.p2 === fromState.p2
+        )
+        return result.stochasticMatrix[i][index]
+      }
+      if (toState.p2 === 0 && toState.p1 === 1 && fromState.p2 === 1) {
+        const index = result.states.findIndex(
+          (state) => state.p2 === 0 && state.p1 === fromState.p1
+        )
+        return result.stochasticMatrix[i][index]
+      }
+      return prob
+    })
+  )
+}
+
 function drawStateTransitionGraph() {
   const states = clashResult.value.states.map(coinNumberStateToLabel)
 
@@ -61,17 +95,29 @@ function drawStateTransitionGraph() {
     node [shape = circle];
 
     // Define nodes
-    ${states.map((state) => `"${state}" [label="${state}"];`).join("\n")}
+    ${states
+      .filter(
+        (_, i) =>
+          clashResult.value.states[i].every((x) => x > 0) ||
+          clashResult.value.states[i].sum() === 1
+      )
+      .map((state) => `"${state}" [label="${state}"];`)
+      .join("\n")}
 
     // Define edges
-    ${clashResult.value.stochasticMatrix
+    ${modifyStochasticMatrixForPresentation(clashResult.value)
       .map((row, i) =>
         row
           .map((prob, j) => {
-            if (prob > 0 && !["Win", "Lose"].includes(states[i]))
+            if (prob > 0 && !["Win", "Lose"].includes(states[i])) {
               return `"${states[i]}" -> "${states[j]}" [label="${prob.toFixed(
                 2
-              )}"];`
+              )}" color="#000000${Math.round(255 * prob)
+                .toString(16)
+                .padStart(2, "0")}" fontcolor="#000000${Math.round(255 * prob)
+                .toString(16)
+                .padStart(2, "0")}"];`
+            }
             return ""
           })
           .join("\n")
@@ -192,10 +238,14 @@ watch(() => clashResult.value, drawStateTransitionGraph)
       </p>
       <p>P(flipping heads) = 0.5 + (sanity / 100)</p>
       <p>
-        Clash power = base power + (number of heads * coin power) + (number of
-        tails * max(0, floor(self offense level - opponent offense level / 3)))
+        Clash power = base power + (number of heads * coin power) + max(0,
+        floor(self offense level - opponent offense level / 3))
       </p>
       <div ref="stateTransitionDiagram"></div>
+      <p>
+        Note: The graph may be disconnected if some values are too close to zero
+        due to insufficient precision.
+      </p>
     </div>
   </div>
 </template>

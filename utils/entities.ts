@@ -1,3 +1,9 @@
+export type ClashResult = {
+  winRate: number
+  states: CoinNumberState[]
+  stochasticMatrix: number[][]
+}
+
 export class Clasher {
   basePower: number
   numCoins: number
@@ -34,12 +40,9 @@ export class Clasher {
     return 0.5 + this.sanity / 100
   }
 
-  clashPower(coins: number, heads: number, enemy?: Clasher): number {
-    if (coins > this.numCoins) {
-      throw new Error(`Maximum number of coins is ${this.numCoins}`)
-    }
-    if (heads > coins) {
-      throw new Error("Number of heads cannot be more than the number of coins")
+  clashPower(heads: number, enemy?: Clasher): number {
+    if (heads > this.numCoins) {
+      throw new Error(`Maximum number of heads is ${this.numCoins}`)
     }
 
     let offenseLevelModifier = 0
@@ -50,9 +53,7 @@ export class Clasher {
       )
     }
 
-    return (
-      this.basePower + heads * this.coinPower + coins * offenseLevelModifier
-    )
+    return this.basePower + heads * this.coinPower + offenseLevelModifier
   }
 }
 
@@ -71,5 +72,11 @@ export class CoinNumberState {
     predicate: (value: number, index: number, array: number[]) => boolean
   ): boolean {
     return [this.p1, this.p2].some(predicate)
+  }
+
+  every(
+    predicate: (value: number, index: number, array: number[]) => boolean
+  ): boolean {
+    return [this.p1, this.p2].every(predicate)
   }
 }
