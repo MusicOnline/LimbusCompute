@@ -280,14 +280,16 @@ function drawStateTransitionGraph() {
   const states = clashResult.value.states.map(coinNumberStateToLabel)
 
   const dotGraph = `
-  digraph G {
+  digraph {
     rankdir=LR; // Left to right layout
     label = "State Transition Graph";
 
-    node [shape = doublecircle style = filled]; Win Lose;
-    node [shape = circle];
+    // Define absorbing state nodes
+    node [shape = doublecircle style = filled];
+    Win Lose;
 
-    // Define nodes
+    // Define other nodes
+    node [shape = circle];
     ${states
       .filter(
         (_, i) =>
@@ -305,19 +307,26 @@ function drawStateTransitionGraph() {
             if (prob > 0 && !["Win", "Lose"].includes(states[i])) {
               return `"${states[i]}" -> "${states[j]}" [label="${prob.toFixed(
                 2
-              )}" color="#000000${Math.round(255 * prob)
-                .toString(16)
-                .padStart(2, "0")}" fontcolor="#000000${Math.round(255 * prob)
-                .toString(16)
-                .padStart(2, "0")}"];`
+              )}"
+                color="#000000${Math.round(255 * prob)
+                  .toString(16)
+                  .padStart(2, "0")}"
+                fontcolor="#000000${Math.round(255 * prob)
+                  .toString(16)
+                  .padStart(2, "0")}"];`
             }
             return ""
           })
           .join("\n")
       )
       .join("\n")}
-    Win [fillcolor = springgreen];
-    Lose [fillcolor = red fontcolor = white];
+    Win [fillcolor="#00ff7f${Math.round(255 * clashResult.value.winRate)
+      .toString(16)
+      .padStart(2, "0")}"];
+    Lose [fillcolor="#ff0000${Math.round(255 * (1 - clashResult.value.winRate))
+      .toString(16)
+      .padStart(2, "0")}"
+      fontcolor=${clashResult.value.winRate > 0.3 ? "black" : "white"}];
   }
 `
 
@@ -475,7 +484,34 @@ watch(() => clashResult.value, drawStateTransitionGraph)
       </div>
     </form>
     <hr />
-    <div>Clash win rate: {{ (clashResult.winRate * 100).toFixed(1) }}%</div>
+    <div style="font-size: x-large">
+      Clash win rate:
+      <span style="font-weight: bold">
+        {{ (clashResult.winRate * 100).toFixed(1) }}%
+      </span>
+      <span
+        v-if="clashResult.winRate > 0.8"
+        style="font-weight: bold; color: green"
+      >
+        (Dominating)
+      </span>
+      <span
+        v-else-if="clashResult.winRate > 0.6"
+        style="font-weight: bold; color: darkgreen"
+      >
+        (Favored)
+      </span>
+      <span v-else-if="clashResult.winRate > 0.4" style="font-weight: bold">
+        (Neutral)
+      </span>
+      <span
+        v-else-if="clashResult.winRate > 0.2"
+        style="font-weight: bold; color: darkred"
+      >
+        (Struggling)
+      </span>
+      <span v-else style="font-weight: bold; color: red"> (Hopeless) </span>
+    </div>
     <hr />
     <div>
       <p>
@@ -492,7 +528,7 @@ watch(() => clashResult.value, drawStateTransitionGraph)
       <p>P(flipping heads) = 0.5 + (sanity / 100)</p>
       <p>
         Clash power = base power + (number of heads * coin power) + max(0,
-        floor(self offense level - opponent offense level / 3))
+        floor((self offense level - opponent offense level) / 3))
       </p>
       <div ref="stateTransitionDiagram"></div>
       <p>
