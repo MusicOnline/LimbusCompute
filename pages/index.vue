@@ -1,6 +1,200 @@
 <script setup lang="ts">
 import { instance as viz } from "@viz-js/viz"
+import {
+  SinnerIdentityJsonSchema,
+  type SinnerIdentityJson,
+  type SinnerIdentity,
+} from "@/entities/SinnerIdentity"
 import type { CoinNumberState } from "~/utils/entities"
+
+const DATA_REPOSITORY_ROOT_URL =
+  "https://raw.githubusercontent.com/SyxP/ObiterDicta.jl/main/data/"
+
+const SINNER_IDENTITY_DATA_ROOT_URL = new URL(
+  "StaticData/static-data/personality/",
+  DATA_REPOSITORY_ROOT_URL
+).toString()
+
+const SINNER_SKILL_DATA_ROOT_URL = new URL(
+  "StaticData/static-data/skill/",
+  DATA_REPOSITORY_ROOT_URL
+).toString()
+
+const SINNER_IDENTITY_LOCALE_EN_FILENAME = "EN_Personalities.json"
+const SKILL_LOCALE_EN_FILENAME = "EN_Skills.json"
+
+const LOCALE_EN_ROOT_URL = new URL(
+  "Localize/en/",
+  DATA_REPOSITORY_ROOT_URL
+).toString()
+
+const SINNER_TO_NAME = {
+  yisang: "Yi Sang",
+  faust: "Faust",
+  donquixote: "Don Quixote",
+  ryoshu: "Ryōshū",
+  mersault: "Mersault",
+  honglu: "Hong Lu",
+  heathcliff: "Heathcliff",
+  ishmael: "Ishmael",
+  rodion: "Rodion",
+  sinclair: "Sinclair",
+  outis: "Outis",
+  gregor: "Gregor",
+}
+
+const SINNER_TO_NUMBER = {
+  yisang: 1,
+  faust: 2,
+  donquixote: 3,
+  ryoshu: 4,
+  mersault: 5,
+  honglu: 6,
+  heathcliff: 7,
+  ishmael: 8,
+  rodion: 9,
+  sinclair: 10,
+  outis: 11,
+  gregor: 12,
+}
+
+const sinnerToIdentityData = useState<{ [key: string]: SinnerIdentityJson }>(
+  "sinnerToIdentityData",
+  () => ({})
+)
+const sinnerToSkillData = useState<{ [key: string]: any }>(
+  "sinnerToSkillData",
+  () => ({})
+)
+const sinnerToSkillLocale = useState<{ [key: string]: any }>(
+  "sinnerToSkillLocale",
+  () => ({})
+)
+const isLoadingSinner = ref<boolean>(false)
+const sinnerKey = ref<string | null>(null)
+const sinnerIdentityId = ref<string | null>(null)
+const sinnerSkillId = ref<string | null>(null)
+
+const { data: sinnerIdentityLocaleEN } = await useFetch(
+  new URL(SINNER_IDENTITY_LOCALE_EN_FILENAME, LOCALE_EN_ROOT_URL).toString(),
+  {
+    key: "sinnerIdentityLocaleEN",
+    transform(response) {
+      return JSON.parse(<string>response)
+    },
+  }
+)
+
+const { data: sinnerSkillLocaleEN } = await useFetch(
+  new URL(SKILL_LOCALE_EN_FILENAME, LOCALE_EN_ROOT_URL).toString(),
+  {
+    key: "sinnerSkillLocaleEN",
+    transform(response) {
+      return JSON.parse(<string>response)
+    },
+  }
+)
+
+async function changeSinner() {
+  sinnerIdentityId.value = null
+  sinnerSkillId.value = null
+  if (!sinnerKey.value) return
+  const sinnerKeyCopy = sinnerKey.value
+  if (!Object.hasOwn(sinnerToIdentityData.value, sinnerKeyCopy)) {
+    isLoadingSinner.value = true
+    const identityPromise = await $fetch(
+      new URL(
+        `personality-${SINNER_TO_NUMBER[sinnerKeyCopy]
+          .toString()
+          .padStart(2, "0")}.json`,
+        SINNER_IDENTITY_DATA_ROOT_URL
+      ).toString()
+    ).then((response) => {
+      const data = SinnerIdentityJsonSchema.parse(JSON.parse(<string>response))
+      sinnerToIdentityData.value[sinnerKeyCopy] = data
+      return data
+    })
+    const skillPromise = await $fetch(
+      new URL(
+        `personality-skill-${SINNER_TO_NUMBER[sinnerKeyCopy]
+          .toString()
+          .padStart(2, "0")}.json`,
+        SINNER_SKILL_DATA_ROOT_URL
+      ).toString()
+    ).then((response) => {
+      const data = JSON.parse(<string>response)
+      sinnerToSkillData.value[sinnerKeyCopy] = data
+      return data
+    })
+    const skillLocalePromise = await $fetch(
+      new URL(
+        `EN_Skills_personality-${SINNER_TO_NUMBER[sinnerKeyCopy]
+          .toString()
+          .padStart(2, "0")}.json`,
+        LOCALE_EN_ROOT_URL
+      ).toString()
+    ).then((response) => {
+      const data = JSON.parse(<string>response)
+      sinnerToSkillLocale.value[sinnerKeyCopy] = data
+      return data
+    })
+    return await Promise.all([
+      identityPromise,
+      skillPromise,
+      skillLocalePromise,
+    ]).then(() => (isLoadingSinner.value = false))
+  }
+}
+
+const sinnerIdentity = computed<SinnerIdentity | null>(() => {
+  if (!sinnerIdentityId.value) return
+  return (
+    sinnerToIdentityData.value[sinnerKey.value!]?.list.find(
+      (entry) => entry.id === Number(sinnerIdentityId.value)
+    ) ?? null
+  )
+})
+
+const sinnerIdentitySkills = computed(() => {
+  if (!sinnerIdentity.value) return []
+  return sinnerIdentity.value.attributeList.map((entry) =>
+    getSinnerSkill(sinnerKey.value!, entry.skillId)
+  )
+})
+
+const sinnerSkill = computed(() => {
+  if (!sinnerKey.value || !sinnerSkillId.value) return
+  return getSinnerSkill(sinnerKey.value, sinnerSkillId.value)
+})
+
+function getSinnerSkill(sinnerKey: string, sinnerSkillId: string | number) {
+  return (
+    sinnerToSkillData.value[sinnerKey].list.find(
+      (entry) => entry.id === sinnerSkillId
+    ) ?? null
+  )
+}
+
+function getIdentityName(identityId: string | number): string | null {
+  return (
+    sinnerIdentityLocaleEN.value.dataList
+      .find((entry) => entry.id === Number(identityId))
+      ?.title.replaceAll("\n", " ") ?? null
+  )
+}
+
+function getSinnerSkillName(
+  sinnerKey: string,
+  sinnerSkillId: string | number
+): string | null {
+  const searchList = (file) =>
+    file.dataList
+      .find((entry) => entry.id === Number(sinnerSkillId))
+      ?.levelList.slice(-1)[0].name ?? null
+  const sharedFileSkill = searchList(sinnerSkillLocaleEN.value)
+  if (sharedFileSkill) return sharedFileSkill
+  return searchList(sinnerToSkillLocale.value[sinnerKey])
+}
 
 const p1Data = ref({
   basePower: 4,
@@ -85,7 +279,6 @@ function modifyStochasticMatrixForPresentation(
 function drawStateTransitionGraph() {
   const states = clashResult.value.states.map(coinNumberStateToLabel)
 
-  // Create DOT language representation for the graph
   const dotGraph = `
   digraph G {
     rankdir=LR; // Left to right layout
@@ -144,6 +337,66 @@ watch(() => clashResult.value, drawStateTransitionGraph)
     <h1>[Limbus Compute] Clash Calculator (WIP)</h1>
     <form>
       <div>
+        <div>
+          <label for="p1Sinner">Select Sinner:</label>
+          <select id="p1Sinner" v-model="sinnerKey" @change="changeSinner()">
+            <option disabled value="">Select one</option>
+            <option
+              v-for="(name, key) in SINNER_TO_NAME"
+              :value="key"
+              :key="key"
+            >
+              {{ name }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label for="p1SinnerIdentity">Select Identity:</label>
+          <ClientOnly>
+            <select
+              id="p1SinnerIdentity"
+              v-model="sinnerIdentityId"
+              :disabled="!sinnerKey || !sinnerToIdentityData[sinnerKey]"
+              @change="sinnerSkillId = null"
+            >
+              <option disabled value="">Select one</option>
+              <template v-if="!isLoadingSinner">
+                <option
+                  v-for="identity in sinnerToIdentityData[sinnerKey!]?.list || []"
+                  :value="identity.id"
+                  :key="identity.id"
+                >
+                  {{ getIdentityName(identity.id) }}
+                </option>
+              </template>
+            </select>
+          </ClientOnly>
+        </div>
+        <div>
+          <label for="p1SinnerSkill">Select Skill:</label>
+          <ClientOnly>
+            <select
+              id="p1SinnerSkill"
+              v-model="sinnerSkillId"
+              :disabled="
+                !sinnerKey ||
+                !sinnerToIdentityData[sinnerKey] ||
+                !sinnerToSkillData[sinnerKey]
+              "
+            >
+              <option disabled value="">Select one</option>
+              <template v-if="!isLoadingSinner">
+                <option
+                  v-for="skill in sinnerIdentitySkills"
+                  :value="skill.id"
+                  :key="skill.id"
+                >
+                  {{ getSinnerSkillName(sinnerKey!, skill.id) }}
+                </option>
+              </template>
+            </select>
+          </ClientOnly>
+        </div>
         <div>
           <label for="p1BasePower">Sinner Base Power:</label>
           <input
