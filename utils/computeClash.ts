@@ -1,7 +1,14 @@
-import { Character, CoinNumberState } from "./entities"
+import { Clasher, CoinNumberState } from "./entities"
 import { binomialPmf, matrixDot, matrixInverse, matrixSubtract } from "./math"
 
-export default (p1: Character, p2: Character): number => {
+export default (
+  p1: Clasher,
+  p2: Clasher
+): {
+  winRate: number
+  states: CoinNumberState[]
+  stochasticMatrix: number[][]
+} => {
   const numStates = (p1.numCoins + 1) * (p2.numCoins + 1) - 1
   const states: CoinNumberState[] = []
 
@@ -90,5 +97,9 @@ export default (p1: Character, p2: Character): number => {
   )
   const fundamentalMatrix = matrixInverse(matrixSubtract(Imatrix, Qmatrix))
   const Bmatrix = matrixDot(<number[][]>fundamentalMatrix, Rmatrix)
-  return Bmatrix[0][0]
+  return {
+    winRate: Bmatrix[0][0],
+    states,
+    stochasticMatrix,
+  }
 }

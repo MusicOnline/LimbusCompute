@@ -1,4 +1,4 @@
-export class Character {
+export class Clasher {
   basePower: number
   numCoins: number
   sanity: number
@@ -34,7 +34,7 @@ export class Character {
     return 0.5 + this.sanity / 100
   }
 
-  clashPower(coins: number, heads: number, enemy?: Character): number {
+  clashPower(coins: number, heads: number, enemy?: Clasher): number {
     if (coins > this.numCoins) {
       throw new Error(`Maximum number of coins is ${this.numCoins}`)
     }

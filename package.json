@@ -15,5 +15,9 @@
   },
   "prettier": {
     "semi": false
+  },
+  "devDependencies": {
+    "@viz-js/viz": "^3.4.0",
+    "zod": "^3.22.4"
   }
 }

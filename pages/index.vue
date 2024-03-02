@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { instance as viz } from "@viz-js/viz"
+import type { CoinNumberState } from "~/utils/entities"
+
 const p1Data = ref({
   basePower: 4,
   numCoins: 2,
   sanity: 4,
   coinPower: 11,
-  offenseLevel: 36,
+  offenseLevel: 40,
 })
 
 const p2Data = ref({
@@ -12,18 +15,18 @@ const p2Data = ref({
   numCoins: 3,
   sanity: 20,
   coinPower: 3,
-  offenseLevel: 44,
+  offenseLevel: 40,
 })
 
-const clashWinRate = computed(() => {
-  const p1 = new Character(
+const clashResult = computed(() => {
+  const p1 = new Clasher(
     p1Data.value.basePower,
     p1Data.value.numCoins,
     p1Data.value.sanity,
     p1Data.value.coinPower,
     p1Data.value.offenseLevel
   )
-  const p2 = new Character(
+  const p2 = new Clasher(
     p2Data.value.basePower,
     p2Data.value.numCoins,
     p2Data.value.sanity,
@@ -31,11 +34,63 @@ const clashWinRate = computed(() => {
     p2Data.value.offenseLevel
   )
 
-  console.time("Computed clash win rate")
-  const result = getClashWinRate(p1, p2)
-  console.timeEnd("Computed clash win rate")
+  console.time("Computed clash")
+  const result = computeClash(p1, p2)
+  console.timeEnd("Computed clash")
   return result
 })
+
+const stateTransitionDiagram = ref<HTMLElement | null>(null)
+
+function coinNumberStateToLabel({ p1, p2 }: CoinNumberState): string {
+  if (p1 === 1 && p2 === 0) return "Win"
+  if (p2 === 1 && p1 === 0) return "Lose"
+  return `${p1},${p2}`
+}
+
+function drawStateTransitionGraph() {
+  const states = clashResult.value.states.map(coinNumberStateToLabel)
+
+  // Create DOT language representation for the graph
+  const dotGraph = `
+  digraph G {
+    rankdir=LR; // Left to right layout
+    label = "State Transition Graph";
+
+    node [shape = doublecircle style = filled]; Win Lose;
+    node [shape = circle];
+
+    // Define nodes
+    ${states.map((state) => `"${state}" [label="${state}"];`).join("\n")}
+
+    // Define edges
+    ${clashResult.value.stochasticMatrix
+      .map((row, i) =>
+        row
+          .map((prob, j) => {
+            if (prob > 0 && !["Win", "Lose"].includes(states[i]))
+              return `"${states[i]}" -> "${states[j]}" [label="${prob.toFixed(
+                2
+              )}"];`
+            return ""
+          })
+          .join("\n")
+      )
+      .join("\n")}
+    Win [fillcolor = springgreen];
+    Lose [fillcolor = red fontcolor = white];
+  }
+`
+
+  // Render the graph using Viz.js
+  viz().then((viz) => {
+    stateTransitionDiagram.value?.replaceChildren()
+    stateTransitionDiagram.value?.appendChild(viz.renderSVGElement(dotGraph))
+  })
+}
+
+onMounted(() => drawStateTransitionGraph())
+watch(() => clashResult.value, drawStateTransitionGraph)
 </script>
 
 <template>
@@ -121,6 +176,26 @@ const clashWinRate = computed(() => {
       </div>
     </form>
     <hr />
-    <div>Clash win rate: {{ (clashWinRate * 100).toFixed(1) }}%</div>
+    <div>Clash win rate: {{ (clashResult.winRate * 100).toFixed(1) }}%</div>
+    <hr />
+    <div>
+      <p>
+        Each node represents a scenario of the number of remaining coins of the
+        (sinner, enemy). The value along each arrow represents the probability
+        of reaching a specific scenario in a clash.
+      </p>
+      <p>
+        When a character has a lower clash power than its opponent, the
+        character will lose a coin. For example, if a sinner gets a lower clash
+        power than the enemy, the sinner will lose a coin, and a (2, 3) scenario
+        will change into a (1, 3) scenario.
+      </p>
+      <p>P(flipping heads) = 0.5 + (sanity / 100)</p>
+      <p>
+        Clash power = base power + (number of heads * coin power) + (number of
+        tails * max(0, floor(self offense level - opponent offense level / 3)))
+      </p>
+      <div ref="stateTransitionDiagram"></div>
+    </div>
   </div>
 </template>
