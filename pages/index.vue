@@ -545,7 +545,7 @@ function getMatrixMarkup(matrix: number[][], isBmatrix: boolean = false) {
         {{ (clashResult.winRate * 100).toFixed(1) }}%
       </span>
       <span
-        v-if="clashResult.winRate > 0.8"
+        v-if="clashResult.winRate > 0.9"
         style="font-weight: bold; color: green"
       >
         (Dominating)
@@ -560,7 +560,7 @@ function getMatrixMarkup(matrix: number[][], isBmatrix: boolean = false) {
         (Neutral)
       </span>
       <span
-        v-else-if="clashResult.winRate > 0.2"
+        v-else-if="clashResult.winRate > 0.1"
         style="font-weight: bold; color: darkred"
       >
         (Struggling)
