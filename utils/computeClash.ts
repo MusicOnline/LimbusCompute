@@ -88,11 +88,16 @@ export default (p1: Clasher, p2: Clasher): ClashResult => {
   const Imatrix = Array.from({ length: Qmatrix.length }, (_, i) =>
     Array.from({ length: Qmatrix.length }, (_, j) => (i === j ? 1 : 0))
   )
-  const fundamentalMatrix = matrixInverse(matrixSubtract(Imatrix, Qmatrix))
+  const fundamentalMatrix = matrixInverse(matrixSubtract(Imatrix, Qmatrix))!
   const Bmatrix = matrixDot(<number[][]>fundamentalMatrix, Rmatrix)
   return {
     winRate: Bmatrix[0][0],
     states,
     stochasticMatrix,
+    Qmatrix,
+    Rmatrix,
+    Imatrix,
+    fundamentalMatrix,
+    Bmatrix,
   }
 }

@@ -2,6 +2,11 @@ export type ClashResult = {
   winRate: number
   states: CoinNumberState[]
   stochasticMatrix: number[][]
+  Qmatrix: number[][]
+  Rmatrix: number[][]
+  Imatrix: number[][]
+  fundamentalMatrix: number[][]
+  Bmatrix: number[][]
 }
 
 export class Clasher {

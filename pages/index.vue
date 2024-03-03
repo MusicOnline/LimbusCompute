@@ -337,8 +337,63 @@ function drawStateTransitionGraph() {
   })
 }
 
-onMounted(() => drawStateTransitionGraph())
-watch(() => clashResult.value, drawStateTransitionGraph)
+function typeset(elements: HTMLElement[] | null = null) {
+  if (!window.MathJax) return
+  window.MathJax.startup.promise = MathJax.startup.promise
+    .then(() => MathJax.typesetPromise(elements))
+    .catch((err) => console.log("Typeset failed: " + err.message))
+  return MathJax.startup.promise
+}
+
+let renderMath = () => {
+  nextTick(() => {
+    drawStateTransitionGraph()
+    typeset()
+  })
+}
+
+onMounted(() => {
+  renderMath()
+  renderMath = debounce(renderMath, 500)
+})
+watch(
+  () => clashResult.value,
+  () => renderMath()
+)
+
+useHead({
+  script: [
+    {
+      type: "text/javascript",
+      id: "MathJax-script",
+      // async: true,
+      // src: "https://cdn.jsdelivr.net/npm/mathjax@4.0.0-beta.4/tex-mml-chtml.js",
+      src: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js",
+    },
+  ],
+})
+
+function getMatrixMarkup(matrix: number[][], isBmatrix: boolean = false) {
+  let matrixHtml = "\\begin{bmatrix}"
+
+  matrix.forEach((row, i) => {
+    matrixHtml +=
+      row
+        .map((prob, j) => {
+          const valueString = prob.toFixed(2)
+          if (isBmatrix && i === 0 && j === 0)
+            return `\\color{green}{${valueString}}`
+          if (isBmatrix && i === 0 && j === 1)
+            return `\\color{red}{${valueString}}`
+          if (valueString === "0.00") return "\\color{lightgray}{0.00}"
+          return valueString
+        })
+        .join(" & ") + "\\\\"
+  })
+
+  matrixHtml += "\\end{bmatrix}"
+  return matrixHtml
+}
 </script>
 
 <template>
@@ -382,7 +437,7 @@ watch(() => clashResult.value, drawStateTransitionGraph)
           </ClientOnly>
         </div>
         <div>
-          <label for="p1SinnerSkill">Select Skill:</label>
+          <label for="p1SinnerSkill">Select Skill (WIP):</label>
           <ClientOnly>
             <select
               id="p1SinnerSkill"
@@ -525,16 +580,71 @@ watch(() => clashResult.value, drawStateTransitionGraph)
         power than the enemy, the sinner will lose a coin, and a (2, 3) scenario
         will change into a (1, 3) scenario.
       </p>
-      <p>P(flipping heads) = 0.5 + (sanity / 100)</p>
-      <p>
-        Clash power = base power + (number of heads * coin power) + max(0,
-        floor((self offense level - opponent offense level) / 3))
-      </p>
       <div ref="stateTransitionDiagram"></div>
       <p>
         Note: The graph may be disconnected if some values are too close to zero
         due to insufficient precision.
       </p>
+      <ClientOnly>
+        <p class="has-mathjax">
+          This game can be illustrated as an absorbing Markov chain, \(P\). The
+          initial state is when both players still have all of their coins as in
+          round one. State transitions differ depending on who loses a coin.
+          Each state transition has a different probability. The absorbing
+          states are when a player has lost all of their coins.
+        </p>
+        <p class="has-mathjax">
+          {{
+            `\\[
+            \\begin{align}
+            \\text{Let } &S &&= \\text{the character's sanity} \\\\
+            &ClashPow_{self}(h) &&= \\text{the character's final clashing power given } h \\\\
+            &h &&= \\text{the number of coins flipped heads} \\\\
+            &BasePow_{self} &&= \\text{the skill's base power} \\\\
+            &CoinPow_{self} &&= \\text{the skill's coin power on flipping heads} \\\\
+            &OffLevel_{self} &&= \\text{the skill's offense level} \\\\
+            &OffLevel_{opponent} &&= \\text{the opponent's skill's offense level} \\\\
+            \\end{align}
+          \\]`
+          }}
+        </p>
+        <p class="has-mathjax">
+          {{
+            `\\[
+            \\begin{align}
+            P(\\text{flipping heads}) &= 0.5 + \\frac{S}{100}
+            \\\\
+            ClashPow_{self}(h) &=
+            BasePow_{self} + (h \\cdot CoinPow_{self}) +
+            \\max
+            \\left\\{0, \\left\\lfloor \\frac{ OffLevel_{self} -
+            OffLevel_{opponent} }{3} \\right\\rfloor\\right\\}
+            \\end{align}
+          \\]`
+          }}
+        </p>
+        <p class="has-mathjax">
+          {{
+            `\\[
+            \\begin{align}
+            P &= ${getMatrixMarkup(clashResult.stochasticMatrix)} \\\\
+            Q &= ${getMatrixMarkup(clashResult.Qmatrix)} \\\\
+            R &= ${getMatrixMarkup(clashResult.Rmatrix)} \\\\
+            \\\\
+            N &= (I - Q)^{-1} \\\\
+            &= \\left( ${getMatrixMarkup(clashResult.Imatrix)} -
+            ${getMatrixMarkup(clashResult.Qmatrix)} \\right)^{-1} \\\\
+            &= ${getMatrixMarkup(clashResult.fundamentalMatrix)} \\\\
+            \\\\
+            B &= NR \\\\
+            &= ${getMatrixMarkup(clashResult.fundamentalMatrix)}
+            ${getMatrixMarkup(clashResult.Rmatrix)} \\\\ &=
+            ${getMatrixMarkup(clashResult.Bmatrix, true)}
+            \\end{align}
+          \\]`
+          }}
+        </p>
+      </ClientOnly>
     </div>
   </div>
 </template>
