@@ -15,7 +15,8 @@ export class Clasher {
   sanity: number
   coinPower: number
   offenseLevel: number
-  name?: string
+  finalClashPowerModifier: number
+  paralyzeCount: number
 
   constructor(
     basePower: number,
@@ -23,22 +24,16 @@ export class Clasher {
     sanity: number,
     coinPower: number,
     offenseLevel: number,
-    name?: string
+    finalClashPowerModifier: number,
+    paralyzeCount: number
   ) {
     this.basePower = basePower
     this.numCoins = numCoins
     this.sanity = sanity
     this.coinPower = coinPower
     this.offenseLevel = offenseLevel
-    this.name = name
-  }
-
-  toString(): string {
-    return `${this.name ?? ""}[${this.basePower} + ${this.numCoins}(${
-      this.coinPower >= 0 ? "+" : ""
-    }${this.coinPower}); sanity=${this.sanity}; offense_lv=${
-      this.offenseLevel
-    }]`
+    this.finalClashPowerModifier = finalClashPowerModifier
+    this.paralyzeCount = paralyzeCount
   }
 
   get headsChance(): number {
@@ -58,12 +53,34 @@ export class Clasher {
       )
     }
 
-    return this.basePower + heads * this.coinPower + offenseLevelModifier
+    return (
+      this.basePower +
+      heads * this.coinPower +
+      offenseLevelModifier +
+      this.finalClashPowerModifier
+    )
   }
 }
 
 export class CoinNumberState {
-  constructor(public p1: number, public p2: number) {}
+  constructor(
+    public p1: number,
+    public p2: number,
+    public p1ParalyzeCount: number = 0,
+    public p2ParalyzeCount: number = 0
+  ) {}
+
+  toString(): string {
+    if (this.p1 === 1 && this.p2 === 0) return "Win"
+    if (this.p2 === 1 && this.p1 === 0) return "Lose"
+    const p1String =
+      this.p1.toString() +
+      (this.p1ParalyzeCount ? `P${this.p1ParalyzeCount}` : "")
+    const p2String =
+      this.p2.toString() +
+      (this.p2ParalyzeCount ? `P${this.p2ParalyzeCount}` : "")
+    return `${p1String},${p2String}`
+  }
 
   sum(): number {
     return this.p1 + this.p2
