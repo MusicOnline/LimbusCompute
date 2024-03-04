@@ -105,8 +105,38 @@ const sinnerIdentitySkills = computed(() => {
 
 const sinnerSkill = computed(() => {
   if (!selectedSinnerKey.value || !selectedSinnerSkillId.value) return
-  return getSinnerSkill(selectedSinnerKey.value, selectedSinnerSkillId.value)
+  const skill = getSinnerSkill(
+    selectedSinnerKey.value,
+    selectedSinnerSkillId.value
+  )
+  const skillUpgradeOverrides = [...skill.skillData].sort(
+    (a, b) => b.gaksungLevel - a.gaksungLevel
+  )
+  let mergedSkill = {}
+  skillUpgradeOverrides.forEach((override) => {
+    if (override.gaksungLevel <= sinnerStats.value.uptie)
+      mergedSkill = { ...mergedSkill, ...override }
+  })
+  return mergedSkill
 })
+
+function updateSinnerStats() {
+  if (!sinnerSkill.value) return
+  sinnerStats.value.basePower = sinnerSkill.value.defaultValue
+  sinnerStats.value.numCoins = sinnerSkill.value.coinList.length
+  sinnerStats.value.coinPower =
+    (sinnerSkill.value.coinList[0].operatorType === "ADD" ? 1 : -1) *
+    sinnerSkill.value.coinList[0].scale
+  sinnerStats.value.offenseLevel =
+    sinnerStats.value.level + sinnerSkill.value.skillLevelCorrection
+}
+
+function updateP1Data() {
+  p1Data.value.basePower = sinnerStats.value.basePower
+  p1Data.value.numCoins = sinnerStats.value.numCoins
+  p1Data.value.coinPower = sinnerStats.value.coinPower
+  p1Data.value.offenseLevel = sinnerStats.value.offenseLevel
+}
 
 function getSinnerSkill(sinnerKey: string, sinnerSkillId: string | number) {
   return (
@@ -136,6 +166,15 @@ function getSinnerSkillName(
   if (sharedFileSkill) return sharedFileSkill
   return searchList(sinnerToSkillLocale.value[sinnerKey])
 }
+
+const sinnerStats = ref({
+  uptie: 4,
+  level: 40,
+  basePower: 0,
+  numCoins: 0,
+  coinPower: 0,
+  offenseLevel: 0,
+})
 
 const p1Data = ref({
   basePower: 4,
@@ -217,6 +256,38 @@ useHead({
     <form>
       <div>
         <div>
+          <label for="sinnerStatsUptie">Sinner Uptie Tier:</label>
+          <input
+            type="number"
+            id="sinnerStatsUptie"
+            v-model.number="sinnerStats.uptie"
+            min="1"
+            max="4"
+            @change="
+              () => {
+                updateSinnerStats()
+                updateP1Data()
+              }
+            "
+          />
+        </div>
+        <div>
+          <label for="sinnerStatsLevel">Sinner Level:</label>
+          <input
+            type="number"
+            id="sinnerStatsLevel"
+            v-model.number="sinnerStats.level"
+            min="1"
+            max="40"
+            @change="
+              () => {
+                updateSinnerStats()
+                updateP1Data()
+              }
+            "
+          />
+        </div>
+        <div>
           <label for="p1Sinner">Select Sinner:</label>
           <select
             id="p1Sinner"
@@ -258,7 +329,7 @@ useHead({
           </ClientOnly>
         </div>
         <div>
-          <label for="p1SinnerSkill">Select Skill (WIP):</label>
+          <label for="p1SinnerSkill">Select Skill:</label>
           <ClientOnly>
             <select
               id="p1SinnerSkill"
@@ -267,6 +338,12 @@ useHead({
                 !selectedSinnerKey ||
                 !sinnerToIdentityData[selectedSinnerKey] ||
                 !sinnerToSkillData[selectedSinnerKey]
+              "
+              @change="
+                () => {
+                  updateSinnerStats()
+                  updateP1Data()
+                }
               "
             >
               <option disabled value="">Select one</option>
@@ -282,6 +359,7 @@ useHead({
             </select>
           </ClientOnly>
         </div>
+        <hr />
         <div>
           <label for="p1BasePower">Sinner Base Power:</label>
           <input
