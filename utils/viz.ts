@@ -1,9 +1,33 @@
 import { instance as viz } from "@viz-js/viz"
 
+function isConnected(matrix: number[][], visited: boolean[], state: number) {
+  visited[state] = true
+  for (let nextState = 0; nextState < matrix.length; nextState++) {
+    if (matrix[state][nextState] > 0 && !visited[nextState]) {
+      isConnected(matrix, visited, nextState)
+    }
+  }
+}
+
+function setUnreachableRowsToZero(matrix: number[][]) {
+  const numStates = matrix.length
+  const visited: boolean[] = new Array(numStates).fill(false)
+
+  // Start traversal from the initial state (e.g., state 0)
+  isConnected(matrix, visited, 0)
+
+  // Set rows to zero if they are not reachable
+  for (let row = 0; row < numStates; row++) {
+    if (!visited[row]) {
+      matrix[row].fill(0)
+    }
+  }
+}
+
 function modifyStochasticMatrixForPresentation(
   result: ClashResult
 ): number[][] {
-  return result.stochasticMatrix.map((row, i) =>
+  const matrix = result.stochasticMatrix.map((row, i) =>
     row.map((prob, j) => {
       const fromState = result.states[i]
       const toState = result.states[j]
@@ -32,6 +56,8 @@ function modifyStochasticMatrixForPresentation(
       return prob
     })
   )
+  setUnreachableRowsToZero(matrix)
+  return matrix
 }
 
 export function drawStateTransitionGraph(
@@ -40,6 +66,7 @@ export function drawStateTransitionGraph(
 ) {
   if (!container) return
   const states = clashResult.states.map((state) => state.toString())
+  const presentationMatrix = modifyStochasticMatrixForPresentation(clashResult)
 
   const dotGraph = `
     digraph {
@@ -54,15 +81,13 @@ export function drawStateTransitionGraph(
       node [shape = circle];
       ${states
         .filter(
-          (_, i) =>
-            clashResult.states[i].every((x) => x > 0) ||
-            clashResult.states[i].sum() === 1
+          (_, i) => i === 0 || presentationMatrix.some((row) => row[i] > 0)
         )
         .map((state) => `"${state}" [label="${state}"];`)
         .join("\n")}
   
       // Define edges
-      ${modifyStochasticMatrixForPresentation(clashResult)
+      ${presentationMatrix
         .map((row, i) =>
           row
             .map((prob, j) => {

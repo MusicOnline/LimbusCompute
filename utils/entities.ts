@@ -75,10 +75,10 @@ export class CoinNumberState {
     if (this.p2 === 1 && this.p1 === 0) return "Lose"
     const p1String =
       this.p1.toString() +
-      (this.p1ParalyzeCount ? `P${this.p1ParalyzeCount}` : "")
+      (this.p1ParalyzeCount ? `p${this.p1ParalyzeCount}` : "")
     const p2String =
       this.p2.toString() +
-      (this.p2ParalyzeCount ? `P${this.p2ParalyzeCount}` : "")
+      (this.p2ParalyzeCount ? `p${this.p2ParalyzeCount}` : "")
     return `${p1String},${p2String}`
   }
 
@@ -100,5 +100,15 @@ export class CoinNumberState {
     predicate: (value: number, index: number, array: number[]) => boolean
   ): boolean {
     return [this.p1, this.p2].every(predicate)
+  }
+
+  get p1UnparalyzedCoins(): number {
+    if (this.p1ParalyzeCount >= this.p1) return 0
+    return this.p1 - this.p1ParalyzeCount
+  }
+
+  get p2UnparalyzedCoins(): number {
+    if (this.p2ParalyzeCount >= this.p2) return 0
+    return this.p2 - this.p2ParalyzeCount
   }
 }

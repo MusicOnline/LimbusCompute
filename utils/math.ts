@@ -62,17 +62,16 @@ export function matrixSubtract(
  * Calculates the inverse of a square matrix (2D array).
  * Assumes that the input matrix is square (same number of rows and columns).
  * @param matrix - The input matrix.
- * @returns The inverse of the matrix or null if it's not invertible.
+ * @returns The inverse of the matrix if it's not invertible.
  */
-export function matrixInverse(matrix: number[][]): number[][] | null {
+export function matrixInverse(matrix: number[][]): number[][] {
   const numRows = matrix.length
   const numCols = matrix[0].length
 
   if (numRows !== numCols) {
-    console.error(
+    throw new Error(
       "Input matrix must be square (same number of rows and columns)."
     )
-    return null
   }
 
   // Create an identity matrix of the same size
@@ -90,8 +89,7 @@ export function matrixInverse(matrix: number[][]): number[][] | null {
     }
 
     if (pivotRow === numRows) {
-      console.error("Matrix is not invertible.")
-      return null
+      throw new Error("Matrix is not invertible.")
     }
 
     // Swap rows to make the pivot element non-zero

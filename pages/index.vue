@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { instance as viz } from "@viz-js/viz"
 import {
   SinnerIdentityJsonSchema,
   type SinnerIdentity,
@@ -15,6 +14,7 @@ const selectedSinnerIdentityId = ref<string | null>(null)
 const selectedSinnerSkillId = ref<string | null>(null)
 
 const stateTransitionDiagram = ref<HTMLElement | null>(null)
+const isMathematicalProofVisible = ref<boolean>(false)
 
 const { data: sinnerIdentityLocaleEN } = await useFetch(
   new URL(SINNER_IDENTITY_LOCALE_EN_FILENAME, LOCALE_EN_ROOT_URL).toString(),
@@ -446,17 +446,33 @@ useHead({
         Note: The graph may be disconnected if some values are too close to zero
         due to insufficient precision.
       </p>
+      <div>
+        <input
+          id="showMathematicalProofCheckbox"
+          type="checkbox"
+          v-model="isMathematicalProofVisible"
+          @change="
+            nextTick(() => {
+              if (isMathematicalProofVisible) renderMath()
+            })
+          "
+        />
+        <label for="showMathematicalProofCheckbox">
+          Show Mathematical Proof (WIP)
+        </label>
+      </div>
       <ClientOnly>
-        <p class="has-mathjax">
-          This game can be illustrated as an absorbing Markov chain, \(P\). The
-          initial state is when both players still have all of their coins as in
-          round one. State transitions differ depending on who loses a coin.
-          Each state transition has a different probability. The absorbing
-          states are when a player has lost all of their coins.
-        </p>
-        <p class="has-mathjax">
-          {{
-            `\\[
+        <div v-if="isMathematicalProofVisible">
+          <p class="has-mathjax">
+            This game can be illustrated as an absorbing Markov chain, \(P\).
+            The initial state is when both players still have all of their coins
+            as in round one. State transitions differ depending on who loses a
+            coin. Each state transition has a different probability. The
+            absorbing states are when a player has lost all of their coins.
+          </p>
+          <p class="has-mathjax">
+            {{
+              `\\[
             \\begin{align}
             \\text{Let } &S &&= \\text{the character's sanity} \\\\
             &ClashPow_{self}(h) &&= \\text{the character's final clashing power given } h \\\\
@@ -467,11 +483,11 @@ useHead({
             &OffLevel_{opponent} &&= \\text{the opponent's skill's offense level} \\\\
             \\end{align}
           \\]`
-          }}
-        </p>
-        <p class="has-mathjax">
-          {{
-            `\\[
+            }}
+          </p>
+          <p class="has-mathjax">
+            {{
+              `\\[
             \\begin{align}
             P(\\text{flipping heads}) &= 0.5 + \\frac{S}{100}
             \\\\
@@ -482,11 +498,11 @@ useHead({
             OffLevel_{opponent} }{3} \\right\\rfloor\\right\\}
             \\end{align}
           \\]`
-          }}
-        </p>
-        <p class="has-mathjax">
-          {{
-            `\\[
+            }}
+          </p>
+          <p class="has-mathjax">
+            {{
+              `\\[
             \\begin{align}
             P &= ${getMatrixMarkup(clashResult.stochasticMatrix)} \\\\
             Q &= ${getMatrixMarkup(clashResult.Qmatrix)} \\\\
@@ -503,8 +519,9 @@ useHead({
             ${getMatrixMarkup(clashResult.Bmatrix, true)}
             \\end{align}
           \\]`
-          }}
-        </p>
+            }}
+          </p>
+        </div>
       </ClientOnly>
     </div>
   </div>
