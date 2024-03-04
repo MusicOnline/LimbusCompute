@@ -186,7 +186,7 @@ const clashResult = computed(() => {
 let renderMath = () => {
   nextTick(() => {
     drawStateTransitionGraph(clashResult.value, stateTransitionDiagram.value)
-    typesetMathJax()
+    if (isMathematicalProofVisible) typesetMathJax()
   })
 }
 
@@ -452,9 +452,9 @@ useHead({
           type="checkbox"
           v-model="isMathematicalProofVisible"
           @change="
-            nextTick(() => {
+            () => {
               if (isMathematicalProofVisible) renderMath()
-            })
+            }
           "
         />
         <label for="showMathematicalProofCheckbox">
