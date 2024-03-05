@@ -239,6 +239,7 @@ watch(
 )
 
 useHead({
+  title: "LimbusCompute | Clash Calculator",
   script: [
     {
       type: "text/javascript",
@@ -252,7 +253,14 @@ useHead({
 
 <template>
   <div>
-    <h1>[Limbus Compute] Clash Calculator (WIP)</h1>
+    <div style="padding-bottom: 1em">
+      <span style="font-size: xx-large; font-weight: bold">
+        LimbusCompute
+      </span>
+      <span style="font-size: x-large; font-weight: bold">
+        | Clash Calculator (WIP)
+      </span>
+    </div>
     <form>
       <div>
         <div>
