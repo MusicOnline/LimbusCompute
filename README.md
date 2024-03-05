@@ -1,8 +1,8 @@
 # Limbus Compute
 
-**Website: https://musiconline.github.io/LimbusCompute/**
+**Website: https://limbuscompute.pages.dev**
 
-[![Deploy SSG to GitHub Pages](https://github.com/MusicOnline/LimbusCompute/actions/workflows/deploy-ghpages.yml/badge.svg)](https://github.com/MusicOnline/LimbusCompute/actions/workflows/deploy-ghpages.yml)
+[![Deploy SSG to Cloudflare Pages](https://github.com/MusicOnline/LimbusCompute/actions/workflows/deploy-cfpages.yml/badge.svg)](https://github.com/MusicOnline/LimbusCompute/actions/workflows/deploy-cfpages.yml) [![Deploy SSG to GitHub Pages](https://github.com/MusicOnline/LimbusCompute/actions/workflows/deploy-ghpages.yml/badge.svg)](https://github.com/MusicOnline/LimbusCompute/actions/workflows/deploy-ghpages.yml)
 
 Work-in-progress toolbox for Limbus Company, a turn-based RPG developed by Project Moon. Made with [Nuxt](https://nuxt.com).
 
@@ -75,6 +75,16 @@ pnpm preview
 
 ### Continuous Deployment
 
-Any pushes to the main branch of this repository will trigger the [`deploy-ghpages`](./.github/workflows/deploy-ghpages.yml) workflow to deploy the website to GitHub Pages.
+Any pushes to this repository may trigger Cloudflare Pages to build and deploy the website with its automatic deployments feature (without using workers). This is currently disabled due to it being unstable (works sometimes, and segfaults other times). In addition to the above environment variables, `NITRO_PRESET=static` is required. This is the build command:
 
-Artifacts are available for download in the GitHub Actions page.
+```bash
+pnpm build
+```
+
+[`deploy-cfpages`](./.github/workflows/deploy-cfpages.yml) can be triggered manually with GitHub Actions in case the Cloudflare build fails. This workflow is used on push instead of Cloudflare's own automatic deployments.
+
+Additionally, any pushes to the main branch of this repository will trigger the [`deploy-ghpages`](./.github/workflows/deploy-ghpages.yml) workflow to deploy the website to GitHub Pages.
+
+GitHub Pages Mirror: https://musiconline.github.io/LimbusCompute/
+
+Artifacts for both builds are available for download in their respective GitHub Actions pages.
