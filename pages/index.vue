@@ -406,16 +406,14 @@ useHead({
             v-model.number="p1Data.finalClashPowerModifier"
           />
         </div>
-        <DevOnly>
-          <div>
-            <label for="p1ParalyzeCount">Sinner Paralyze Count:</label>
-            <input
-              type="number"
-              id="p1ParalyzeCount"
-              v-model.number="p1Data.paralyzeCount"
-            />
-          </div>
-        </DevOnly>
+        <div>
+          <label for="p1ParalyzeCount">Sinner Paralyze Count:</label>
+          <input
+            type="number"
+            id="p1ParalyzeCount"
+            v-model.number="p1Data.paralyzeCount"
+          />
+        </div>
       </div>
       <hr />
       <div>
@@ -465,16 +463,14 @@ useHead({
             v-model.number="p2Data.finalClashPowerModifier"
           />
         </div>
-        <DevOnly>
-          <div>
-            <label for="p2ParalyzeCount">Enemy Paralyze Count:</label>
-            <input
-              type="number"
-              id="p2ParalyzeCount"
-              v-model.number="p2Data.paralyzeCount"
-            />
-          </div>
-        </DevOnly>
+        <div>
+          <label for="p2ParalyzeCount">Enemy Paralyze Count:</label>
+          <input
+            type="number"
+            id="p2ParalyzeCount"
+            v-model.number="p2Data.paralyzeCount"
+          />
+        </div>
       </div>
     </form>
     <hr />
