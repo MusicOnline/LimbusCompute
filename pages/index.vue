@@ -131,13 +131,15 @@ const sinnerSkill = computed<SkillDataItem | null>(() => {
     skill.skillData.filter((data) => Object.hasOwn(data, "gaksungLevel"))
   ) // See Wsault skill 2 (1050302)
   const skillUpgradeOverrides = brokenDataRemoved.sort(
-    (a, b) => b.gaksungLevel - a.gaksungLevel
+    (a, b) => a.gaksungLevel - b.gaksungLevel
   )
   let mergedSkill = {}
   skillUpgradeOverrides.forEach((override) => {
     if (override.gaksungLevel <= sinnerStats.value.uptie)
       mergedSkill = { ...mergedSkill, ...override }
+    console.log(mergedSkill)
   })
+
   return <SkillDataItem>mergedSkill
 })
 
