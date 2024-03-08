@@ -28,7 +28,8 @@ const selectedSinnerIdentityId = ref<string | null>(null)
 const selectedSinnerSkillId = ref<string | null>(null)
 
 const stateTransitionDiagram = ref<HTMLElement | null>(null)
-const isMathematicalProofVisible = ref<boolean>(false)
+const isMathRendered = ref<boolean>(false)
+const isMathematicalProofEnabled = ref<boolean>(false)
 
 const { data: sinnerIdentityLocaleEN } = await useFetch(
   new URL(SINNER_IDENTITY_LOCALE_EN_FILENAME, LOCALE_EN_ROOT_URL).toString(),
@@ -258,7 +259,12 @@ let renderMath = () => {
       stateTransitionDiagram.value,
       isDarkMode.value
     )
-    if (isMathematicalProofVisible) typesetMathJax()
+    if (isMathematicalProofEnabled)
+      typesetMathJax(
+        <HTMLElement[]>(
+          Array.from(document.getElementsByClassName("has-mathjax"))
+        )
+      ).then(() => (isMathRendered.value = true))
   })
 }
 
@@ -266,7 +272,10 @@ onMounted(() => {
   renderMath()
   renderMath = debounce(renderMath, 500)
 })
-watch([clashResult, colorMode], () => renderMath())
+watch([clashResult, colorMode, isMathematicalProofEnabled], () => {
+  isMathRendered.value = false
+  renderMath()
+})
 
 useHead({
   title: "Clash Calculator",
@@ -584,27 +593,28 @@ useHead({
         <input
           id="showMathematicalProofCheckbox"
           type="checkbox"
-          v-model="isMathematicalProofVisible"
-          @change="
-            () => {
-              if (isMathematicalProofVisible) renderMath()
-            }
-          "
+          v-model="isMathematicalProofEnabled"
         />
         <label for="showMathematicalProofCheckbox">
           Show Mathematical Proof (WIP)
         </label>
       </div>
       <ClientOnly>
-        <div v-if="isMathematicalProofVisible" class="overflow-x-auto">
-          <p class="has-mathjax">
+        <div v-if="isMathematicalProofEnabled" class="overflow-x-auto">
+          <p
+            class="has-mathjax"
+            :class="{ visible: isMathRendered, invisible: !isMathRendered }"
+          >
             This game can be illustrated as an absorbing Markov chain, \(P\).
             The initial state is when both players still have all of their coins
             as in round one. State transitions differ depending on who loses a
             coin. Each state transition has a different probability. The
             absorbing states are when a player has lost all of their coins.
           </p>
-          <p class="has-mathjax">
+          <p
+            class="has-mathjax"
+            :class="{ visible: isMathRendered, invisible: !isMathRendered }"
+          >
             {{
               `\\[
             \\begin{align}
@@ -619,7 +629,10 @@ useHead({
           \\]`
             }}
           </p>
-          <p class="has-mathjax">
+          <p
+            class="has-mathjax"
+            :class="{ visible: isMathRendered, invisible: !isMathRendered }"
+          >
             {{
               `\\[
             \\begin{align}
@@ -634,7 +647,10 @@ useHead({
           \\]`
             }}
           </p>
-          <p class="has-mathjax">
+          <p
+            class="has-mathjax"
+            :class="{ visible: isMathRendered, invisible: !isMathRendered }"
+          >
             {{
               `\\[
             \\begin{align}
