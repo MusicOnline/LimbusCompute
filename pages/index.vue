@@ -266,10 +266,7 @@ onMounted(() => {
   renderMath()
   renderMath = debounce(renderMath, 500)
 })
-watch(
-  () => clashResult.value,
-  () => renderMath()
-)
+watch([clashResult, colorMode], () => renderMath())
 
 useHead({
   title: "Clash Calculator",
