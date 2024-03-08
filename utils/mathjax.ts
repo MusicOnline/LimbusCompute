@@ -13,6 +13,7 @@ export function typesetMathJax(elements: HTMLElement[] | null = null) {
 
 export function getMatrixMarkup(
   matrix: number[][],
+  isDarkMode: boolean = false,
   isBmatrix: boolean = false
 ) {
   let matrixHtml = "\\begin{bmatrix}"
@@ -26,7 +27,8 @@ export function getMatrixMarkup(
             return `\\color{green}{${valueString}}`
           if (isBmatrix && i === 0 && j === 1)
             return `\\color{red}{${valueString}}`
-          if (valueString === "0.00") return "\\color{lightgray}{0.00}"
+          if (valueString === "0.00")
+            return `\\color{${isDarkMode ? "dimgray" : "lightgray"}}{0.00}`
           return valueString
         })
         .join(" & ") + "\\\\"

@@ -3,6 +3,20 @@ import {
   SinnerIdentityJsonSchema,
   type SinnerIdentity,
 } from "@/entities/SinnerIdentity"
+import {
+  SinnerSkillJsonSchema,
+  type PartialSkillDataItem,
+  type SkillDataItem,
+  type SinnerSkill,
+} from "~/entities/SinnerSkill"
+import { SinnerIdentityLocaleJsonSchema } from "~/entities/locales/SinnerIdentity"
+import {
+  SinnerSkillLocaleJsonSchema,
+  type SinnerSkillLocaleJson,
+} from "~/entities/locales/SinnerSkill"
+
+const colorMode = useColorMode()
+const isDarkMode = computed(() => colorMode.value === "dark")
 
 const sinnerToIdentityData = useSinnerToIdentityData()
 const sinnerToSkillData = useSinnerToSkillData()
@@ -21,7 +35,7 @@ const { data: sinnerIdentityLocaleEN } = await useFetch(
   {
     key: "sinnerIdentityLocaleEN",
     transform(response) {
-      return JSON.parse(<string>response)
+      return SinnerIdentityLocaleJsonSchema.parse(JSON.parse(<string>response))
     },
   }
 )
@@ -31,7 +45,7 @@ const { data: sinnerSkillLocaleEN } = await useFetch(
   {
     key: "sinnerSkillLocaleEN",
     transform(response) {
-      return JSON.parse(<string>response)
+      return SinnerSkillLocaleJsonSchema.parse(JSON.parse(<string>response))
     },
   }
 )
@@ -41,6 +55,7 @@ async function changeSinner() {
   selectedSinnerSkillId.value = null
   if (!selectedSinnerKey.value) return
   const sinnerKeyCopy = selectedSinnerKey.value
+
   if (!Object.hasOwn(sinnerToIdentityData.value, sinnerKeyCopy)) {
     isLoadingSinner.value = true
     const identityPromise = await $fetch(
@@ -63,7 +78,7 @@ async function changeSinner() {
         SINNER_SKILL_DATA_ROOT_URL
       ).toString()
     ).then((response) => {
-      const data = JSON.parse(<string>response)
+      const data = SinnerSkillJsonSchema.parse(JSON.parse(<string>response))
       sinnerToSkillData.value[sinnerKeyCopy] = data
       return data
     })
@@ -75,7 +90,9 @@ async function changeSinner() {
         LOCALE_EN_ROOT_URL
       ).toString()
     ).then((response) => {
-      const data = JSON.parse(<string>response)
+      const data = SinnerSkillLocaleJsonSchema.parse(
+        JSON.parse(<string>response)
+      )
       sinnerToSkillLocale.value[sinnerKeyCopy] = data
       return data
     })
@@ -98,18 +115,22 @@ const sinnerIdentity = computed<SinnerIdentity | null>(() => {
 
 const sinnerIdentitySkills = computed(() => {
   if (!sinnerIdentity.value) return []
-  return sinnerIdentity.value.attributeList.map((entry) =>
-    getSinnerSkill(selectedSinnerKey.value!, entry.skillId)
+  return sinnerIdentity.value.attributeList.flatMap(
+    (entry) => getSinnerSkill(selectedSinnerKey.value!, entry.skillId) ?? []
   )
 })
 
-const sinnerSkill = computed(() => {
-  if (!selectedSinnerKey.value || !selectedSinnerSkillId.value) return
+const sinnerSkill = computed<SkillDataItem | null>(() => {
+  if (!selectedSinnerKey.value || !selectedSinnerSkillId.value) return null
   const skill = getSinnerSkill(
     selectedSinnerKey.value,
     selectedSinnerSkillId.value
   )
-  const skillUpgradeOverrides = [...skill.skillData].sort(
+  if (!skill) return null
+  const brokenDataRemoved = <PartialSkillDataItem[]>(
+    skill.skillData.filter((data) => Object.hasOwn(data, "gaksungLevel"))
+  ) // See Wsault skill 2 (1050302)
+  const skillUpgradeOverrides = brokenDataRemoved.sort(
     (a, b) => b.gaksungLevel - a.gaksungLevel
   )
   let mergedSkill = {}
@@ -117,7 +138,7 @@ const sinnerSkill = computed(() => {
     if (override.gaksungLevel <= sinnerStats.value.uptie)
       mergedSkill = { ...mergedSkill, ...override }
   })
-  return mergedSkill
+  return <SkillDataItem>mergedSkill
 })
 
 function updateSinnerStats() {
@@ -138,7 +159,10 @@ function updateP1Data() {
   p1Data.value.offenseLevel = sinnerStats.value.offenseLevel
 }
 
-function getSinnerSkill(sinnerKey: string, sinnerSkillId: string | number) {
+function getSinnerSkill(
+  sinnerKey: string,
+  sinnerSkillId: string | number
+): SinnerSkill | null {
   return (
     sinnerToSkillData.value[sinnerKey].list.find(
       (entry) => entry.id === sinnerSkillId
@@ -147,6 +171,7 @@ function getSinnerSkill(sinnerKey: string, sinnerSkillId: string | number) {
 }
 
 function getIdentityName(identityId: string | number): string | null {
+  if (!sinnerIdentityLocaleEN.value) return null
   return (
     sinnerIdentityLocaleEN.value.dataList
       .find((entry) => entry.id === Number(identityId))
@@ -158,12 +183,14 @@ function getSinnerSkillName(
   sinnerKey: string,
   sinnerSkillId: string | number
 ): string | null {
-  const searchList = (file) =>
+  const searchList = (file: SinnerSkillLocaleJson) =>
     file.dataList
       .find((entry) => entry.id === Number(sinnerSkillId))
       ?.levelList.slice(-1)[0].name ?? null
-  const sharedFileSkill = searchList(sinnerSkillLocaleEN.value)
-  if (sharedFileSkill) return sharedFileSkill
+  if (sinnerSkillLocaleEN.value) {
+    const sharedFileSkill = searchList(sinnerSkillLocaleEN.value)
+    if (sharedFileSkill) return sharedFileSkill
+  }
   return searchList(sinnerToSkillLocale.value[sinnerKey])
 }
 
@@ -224,7 +251,11 @@ const clashResult = computed(() => {
 
 let renderMath = () => {
   nextTick(() => {
-    drawStateTransitionGraph(clashResult.value, stateTransitionDiagram.value)
+    drawStateTransitionGraph(
+      clashResult.value,
+      stateTransitionDiagram.value,
+      isDarkMode.value
+    )
     if (isMathematicalProofVisible) typesetMathJax()
   })
 }
@@ -239,7 +270,7 @@ watch(
 )
 
 useHead({
-  title: "LimbusCompute | Clash Calculator",
+  title: "Clash Calculator",
   script: [
     {
       type: "text/javascript",
@@ -253,16 +284,12 @@ useHead({
 
 <template>
   <div>
-    <div style="padding-bottom: 1em">
-      <span style="font-size: xx-large; font-weight: bold">
-        LimbusCompute
-      </span>
-      <span style="font-size: x-large; font-weight: bold">
-        | Clash Calculator (WIP)
-      </span>
+    <div class="pb-1">
+      <span class="font-bold text-2xl"> LimbusCompute </span>
+      <span class="font-bold text-xl"> | Clash Calculator (WIP) </span>
     </div>
-    <form>
-      <div>
+    <div class="flex gap-4 flex-wrap p-2">
+      <div class="p-2 bg-yellow-500 text-gray-950">
         <div>
           <label for="sinnerStatsUptie">Sinner Uptie Tier:</label>
           <input
@@ -277,6 +304,7 @@ useHead({
                 updateP1Data()
               }
             "
+            class="bg-yellow-600 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -293,6 +321,7 @@ useHead({
                 updateP1Data()
               }
             "
+            class="bg-yellow-600 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -301,6 +330,7 @@ useHead({
             id="p1Sinner"
             v-model="selectedSinnerKey"
             @change="changeSinner()"
+            class="bg-yellow-600 text-gray-50 my-1 ml-1 pl-2 font-bold"
           >
             <option disabled value="">Select one</option>
             <option
@@ -321,7 +351,8 @@ useHead({
               :disabled="
                 !selectedSinnerKey || !sinnerToIdentityData[selectedSinnerKey]
               "
-              @change="sinnerSkillId = null"
+              @change="selectedSinnerSkillId = null"
+              class="bg-yellow-600 text-gray-50 my-1 ml-1 pl-2 font-bold"
             >
               <option disabled value="">Select one</option>
               <template v-if="!isLoadingSinner">
@@ -353,6 +384,7 @@ useHead({
                   updateP1Data()
                 }
               "
+              class="bg-yellow-600 text-gray-50 my-1 ml-1 pl-2 font-bold"
             >
               <option disabled value="">Select one</option>
               <template v-if="!isLoadingSinner">
@@ -367,13 +399,14 @@ useHead({
             </select>
           </ClientOnly>
         </div>
-        <hr />
+        <hr class="my-2" />
         <div>
           <label for="p1BasePower">Sinner Base Power:</label>
           <input
             type="number"
             id="p1BasePower"
             v-model.number="p1Data.basePower"
+            class="bg-yellow-600 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -382,6 +415,7 @@ useHead({
             type="number"
             id="p1NumCoins"
             v-model.number="p1Data.numCoins"
+            class="bg-yellow-600 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -390,11 +424,17 @@ useHead({
             type="number"
             id="p1CoinPower"
             v-model.number="p1Data.coinPower"
+            class="bg-yellow-600 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
           <label for="p1Sanity">Sinner Sanity:</label>
-          <input type="number" id="p1Sanity" v-model.number="p1Data.sanity" />
+          <input
+            type="number"
+            id="p1Sanity"
+            v-model.number="p1Data.sanity"
+            class="bg-yellow-600 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
+          />
         </div>
         <div>
           <label for="p1OffenseLevel">Sinner Offense Level:</label>
@@ -402,6 +442,7 @@ useHead({
             type="number"
             id="p1OffenseLevel"
             v-model.number="p1Data.offenseLevel"
+            class="bg-yellow-600 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -412,6 +453,7 @@ useHead({
             type="number"
             id="p1FinalClashPowerModifier"
             v-model.number="p1Data.finalClashPowerModifier"
+            class="bg-yellow-600 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -420,17 +462,19 @@ useHead({
             type="number"
             id="p1ParalyzeCount"
             v-model.number="p1Data.paralyzeCount"
+            class="bg-yellow-600 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
       </div>
       <hr />
-      <div>
+      <div class="p-2 bg-red-700 text-gray-50">
         <div>
           <label for="p2BasePower">Enemy Base Power:</label>
           <input
             type="number"
             id="p2BasePower"
             v-model.number="p2Data.basePower"
+            class="bg-red-800 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -439,6 +483,7 @@ useHead({
             type="number"
             id="p2NumCoins"
             v-model.number="p2Data.numCoins"
+            class="bg-red-800 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -447,11 +492,17 @@ useHead({
             type="number"
             id="p2CoinPower"
             v-model.number="p2Data.coinPower"
+            class="bg-red-800 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
           <label for="p2Sanity">Enemy Sanity:</label>
-          <input type="number" id="p2Sanity" v-model.number="p2Data.sanity" />
+          <input
+            type="number"
+            id="p2Sanity"
+            v-model.number="p2Data.sanity"
+            class="bg-red-800 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
+          />
         </div>
         <div>
           <label for="p2OffenseLevel">Enemy Offense Level:</label>
@@ -459,6 +510,7 @@ useHead({
             type="number"
             id="p2OffenseLevel"
             v-model.number="p2Data.offenseLevel"
+            class="bg-red-800 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -469,6 +521,7 @@ useHead({
             type="number"
             id="p2FinalClashPowerModifier"
             v-model.number="p2Data.finalClashPowerModifier"
+            class="bg-red-800 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
         <div>
@@ -477,38 +530,36 @@ useHead({
             type="number"
             id="p2ParalyzeCount"
             v-model.number="p2Data.paralyzeCount"
+            class="bg-red-800 text-gray-50 my-1 w-16 ml-1 pl-2 font-bold"
           />
         </div>
       </div>
-    </form>
+    </div>
     <hr />
-    <div style="font-size: x-large">
+    <div class="text-xl">
       Clash win rate:
-      <span style="font-weight: bold">
+      <span class="font-bold">
         {{ (clashResult.winRate * 100).toFixed(1) }}%
       </span>
-      <span
-        v-if="clashResult.winRate > 0.9"
-        style="font-weight: bold; color: green"
-      >
+      <span v-if="clashResult.winRate > 0.9" class="font-bold text-green-500">
         (Dominating)
       </span>
       <span
         v-else-if="clashResult.winRate > 0.6"
-        style="font-weight: bold; color: darkgreen"
+        class="font-bold text-green-800"
       >
         (Favored)
       </span>
-      <span v-else-if="clashResult.winRate > 0.4" style="font-weight: bold">
+      <span v-else-if="clashResult.winRate > 0.4" class="font-bold">
         (Neutral)
       </span>
       <span
         v-else-if="clashResult.winRate > 0.1"
-        style="font-weight: bold; color: darkred"
+        class="font-bold text-red-800"
       >
         (Struggling)
       </span>
-      <span v-else style="font-weight: bold; color: red"> (Hopeless) </span>
+      <span v-else class="font-bold text-red-500"> (Hopeless) </span>
     </div>
     <hr />
     <div>
@@ -523,7 +574,9 @@ useHead({
         power than the enemy, the sinner will lose a coin, and a (2, 3) scenario
         will change into a (1, 3) scenario.
       </p>
-      <div ref="stateTransitionDiagram"></div>
+      <div class="overflow-x-auto">
+        <div ref="stateTransitionDiagram"></div>
+      </div>
       <p>
         Note: The graph may be disconnected if some values are too close to zero
         due to insufficient precision.
@@ -544,7 +597,7 @@ useHead({
         </label>
       </div>
       <ClientOnly>
-        <div v-if="isMathematicalProofVisible">
+        <div v-if="isMathematicalProofVisible" class="overflow-x-auto">
           <p class="has-mathjax">
             This game can be illustrated as an absorbing Markov chain, \(P\).
             The initial state is when both players still have all of their coins
@@ -586,19 +639,28 @@ useHead({
             {{
               `\\[
             \\begin{align}
-            P &= ${getMatrixMarkup(clashResult.stochasticMatrix)} \\\\
-            Q &= ${getMatrixMarkup(clashResult.Qmatrix)} \\\\
-            R &= ${getMatrixMarkup(clashResult.Rmatrix)} \\\\
+            P &= ${getMatrixMarkup(
+              clashResult.stochasticMatrix,
+              isDarkMode
+            )} \\\\
+            Q &= ${getMatrixMarkup(clashResult.Qmatrix, isDarkMode)} \\\\
+            R &= ${getMatrixMarkup(clashResult.Rmatrix, isDarkMode)} \\\\
             \\\\
             N &= (I - Q)^{-1} \\\\
-            &= \\left( ${getMatrixMarkup(clashResult.Imatrix)} -
-            ${getMatrixMarkup(clashResult.Qmatrix)} \\right)^{-1} \\\\
-            &= ${getMatrixMarkup(clashResult.fundamentalMatrix)} \\\\
+            &= \\left( ${getMatrixMarkup(clashResult.Imatrix, isDarkMode)} -
+            ${getMatrixMarkup(
+              clashResult.Qmatrix,
+              isDarkMode
+            )} \\right)^{-1} \\\\
+            &= ${getMatrixMarkup(
+              clashResult.fundamentalMatrix,
+              isDarkMode
+            )} \\\\
             \\\\
             B &= NR \\\\
-            &= ${getMatrixMarkup(clashResult.fundamentalMatrix)}
-            ${getMatrixMarkup(clashResult.Rmatrix)} \\\\ &=
-            ${getMatrixMarkup(clashResult.Bmatrix, true)}
+            &= ${getMatrixMarkup(clashResult.fundamentalMatrix, isDarkMode)}
+            ${getMatrixMarkup(clashResult.Rmatrix, isDarkMode)} \\\\ &=
+            ${getMatrixMarkup(clashResult.Bmatrix, isDarkMode, true)}
             \\end{align}
           \\]`
             }}

@@ -62,7 +62,8 @@ function modifyStochasticMatrixForPresentation(
 
 export function drawStateTransitionGraph(
   clashResult: ClashResult,
-  container: HTMLElement | null
+  container: HTMLElement | null,
+  isDarkMode: boolean = false
 ) {
   if (!container) return
   const states = clashResult.states.map((state) => state.toString())
@@ -72,6 +73,8 @@ export function drawStateTransitionGraph(
     digraph {
       rankdir=LR; // Left to right layout
       label = "State Transition Graph";
+      bgcolor="transparent";
+      fontcolor=${isDarkMode ? "white" : "black"};
   
       // Define absorbing state nodes
       node [shape = doublecircle style = filled];
@@ -83,7 +86,13 @@ export function drawStateTransitionGraph(
         .filter(
           (_, i) => i === 0 || presentationMatrix.some((row) => row[i] > 0)
         )
-        .map((state) => `"${state}" [label="${state}"];`)
+        .map(
+          (state) =>
+            `"${state}" [label="${state}"
+            fontcolor="#${isDarkMode ? "ffffff" : "000000"}"
+            fillcolor="#${isDarkMode ? "000000" : "ffffff"}"
+            color="#${isDarkMode ? "ffffff" : "000000"}"];`
+        )
         .join("\n")}
   
       // Define edges
@@ -95,22 +104,31 @@ export function drawStateTransitionGraph(
                 return `"${states[i]}" -> "${states[j]}" [label="${prob.toFixed(
                   2
                 )}"
-                  color="#000000${Math.round(255 * prob)
-                    .toString(16)
-                    .padStart(2, "0")}"
-                  fontcolor="#000000${Math.round(255 * prob)
-                    .toString(16)
-                    .padStart(2, "0")}"];`
+                  color="#${isDarkMode ? "ffffff" : "000000"}${Math.round(
+                  255 * prob
+                )
+                  .toString(16)
+                  .padStart(2, "0")}"
+                  fontcolor="#${isDarkMode ? "ffffff" : "000000"}${Math.round(
+                  255 * prob
+                )
+                  .toString(16)
+                  .padStart(2, "0")}"];`
               }
               return ""
             })
             .join("\n")
         )
         .join("\n")}
-      Win [fillcolor="#00ff7f${Math.round(255 * clashResult.winRate)
+      Win [fillcolor="#00ff7f${Math.round(
+        255 * Math.max(0.1, clashResult.winRate)
+      )
         .toString(16)
-        .padStart(2, "0")}"];
-      Lose [fillcolor="#ff0000${Math.round(255 * (1 - clashResult.winRate))
+        .padStart(2, "0")}"
+        fontcolor=black];
+      Lose [fillcolor="#ff0000${Math.round(
+        255 * Math.max(0.1, 1 - clashResult.winRate)
+      )
         .toString(16)
         .padStart(2, "0")}"
         fontcolor=${clashResult.winRate > 0.3 ? "black" : "white"}];

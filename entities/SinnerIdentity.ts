@@ -5,25 +5,25 @@ import * as z from "zod"
 export const TypeSchema = z.enum(["HIT", "PENETRATE", "SLASH"])
 export type Type = z.infer<typeof TypeSchema>
 
-export const AtkResistListSchema = z.object({
+export const AtkResistListItemSchema = z.object({
   type: TypeSchema,
   value: z.number(),
 })
-export type AtkResistList = z.infer<typeof AtkResistListSchema>
+export type AtkResistListItem = z.infer<typeof AtkResistListItemSchema>
 
 export const ResistInfoSchema = z.object({
-  atkResistList: z.array(AtkResistListSchema),
+  atkResistList: z.array(AtkResistListItemSchema),
 })
 export type ResistInfo = z.infer<typeof ResistInfoSchema>
 
-export const ConditionIdListSchema = z.object({
+export const ConditionIdListItemSchema = z.object({
   conditionID: z.string(),
 })
-export type ConditionIdList = z.infer<typeof ConditionIdListSchema>
+export type ConditionIdListItem = z.infer<typeof ConditionIdListItemSchema>
 
 export const AddSchema = z.object({
   level: z.number(),
-  conditionIDList: z.array(ConditionIdListSchema),
+  conditionIDList: z.array(ConditionIdListItemSchema),
 })
 export type Add = z.infer<typeof AddSchema>
 
@@ -44,11 +44,11 @@ export const BreakSectionSchema = z.object({
 })
 export type BreakSection = z.infer<typeof BreakSectionSchema>
 
-export const AttributeListSchema = z.object({
+export const AttributeListItemSchema = z.object({
   skillId: z.number(),
   number: z.number(),
 })
-export type AttributeList = z.infer<typeof AttributeListSchema>
+export type AttributeListItem = z.infer<typeof AttributeListItemSchema>
 
 export const SinnerIdentitySchema = z.object({
   id: z.number(),
@@ -70,7 +70,7 @@ export const SinnerIdentitySchema = z.object({
   mentalConditionInfo: MentalConditionInfoSchema,
   breakSection: BreakSectionSchema,
   resistInfo: ResistInfoSchema,
-  attributeList: z.array(AttributeListSchema),
+  attributeList: z.array(AttributeListItemSchema),
   additionalAttachment: z.string().nullish(),
 })
 export type SinnerIdentity = z.infer<typeof SinnerIdentitySchema>
