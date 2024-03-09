@@ -1,10 +1,10 @@
 export const useCustomEnemySkill = () =>
   useState<ComputeClashSkillStats>("customEnemySkill", () => ({
-    basePower: 13,
-    numCoins: 3,
-    coinPower: 2,
+    basePower: 6,
+    numCoins: 4,
+    coinPower: 3,
     sanity: 0,
-    offenseLevel: 40,
+    offenseLevel: 49,
     finalClashPowerModifier: 0,
     paralyzeCount: 0,
   }))
@@ -22,6 +22,6 @@ export const useCustomSinnerStats = () =>
   useState<SinnerStats>("customSinnerStats", () => ({
     uptie: 4,
     level: 40,
-    sanity: 40,
+    sanity: 45,
     paralyzeCount: 0,
   }))
