@@ -39,6 +39,10 @@ ENABLE_SSR=true
 # Omit this variable if pages are deployed to the root URL
 # Remember to add the leading and trailing slash
 NUXT_APP_BASE_URL=/RepositoryNameHere/
+
+# For generating SEO meta tags that require the base URL including the domain name
+# Omit the trailing slash
+NUXT_PUBLIC_FULL_BASE_URL=http://localhost:3000
 ```
 
 ### Development Server

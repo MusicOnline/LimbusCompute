@@ -30,6 +30,7 @@ jobs:
       - name: Set environment variables
         run: |
           echo "ENABLE_SSR=true" >> $GITHUB_ENV
+          echo "NUXT_PUBLIC_FULL_BASE_URL=https://limbuscompute.pages.dev" >> $GITHUB_ENV
       - name: Detect package manager
         id: detect-package-manager
         run: |

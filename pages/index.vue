@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const runtimeConfig = useRuntimeConfig()
 const colorMode = useColorMode()
 const isDarkMode = computed(() => colorMode.value === "dark")
 
@@ -70,6 +71,15 @@ useHead({
       id: "MathJax-script",
       async: true,
       src: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js",
+    },
+    {
+      type: "application/ld+json",
+      children: `{
+        "@context" : "https://schema.org",
+        "@type" : "WebSite",
+        "name" : "LimbusCompute",
+        "url" : "${runtimeConfig.public.fullBaseUrl}"
+      }`,
     },
   ],
 })

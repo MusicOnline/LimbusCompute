@@ -1,9 +1,47 @@
 <script setup lang="ts">
+const runtimeConfig = useRuntimeConfig()
+const route = useRoute()
+
+useSeoMeta({
+  ogSiteName: "LimbusCompute",
+  ogTitle: "LimbusCompute: Limbus Company Toolbox",
+  description:
+    "Work-in-progress toolbox for Limbus Company, a turn-based RPG developed by Project Moon. Made with Nuxt.",
+  ogDescription:
+    "Work-in-progress toolbox for Limbus Company, a turn-based RPG developed by Project Moon. Made with Nuxt.",
+  ogUrl: () => runtimeConfig.public.fullBaseUrl + route.path,
+  ogLocale: "en",
+  ogType: "website",
+  twitterCard: "summary",
+})
+
 useHead({
   title: null,
   titleTemplate(title) {
     return title ? `${title} | LimbusCompute` : "LimbusCompute"
   },
+  meta: [
+    {
+      key: "og:image",
+      property: "og:image",
+      content: "/favicon-32x32.png",
+    },
+    {
+      key: "og:image:type",
+      property: "og:image:type",
+      content: "image/png",
+    },
+    {
+      key: "og:image:width",
+      property: "og:image:width",
+      content: "32",
+    },
+    {
+      key: "og:image:height",
+      property: "og:image:height",
+      content: "32",
+    },
+  ],
 })
 </script>
 
