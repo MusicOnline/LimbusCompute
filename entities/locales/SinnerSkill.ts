@@ -15,7 +15,7 @@ export const LevelListItemSchema = z.object({
   name: z.string(),
   abName: z.string().optional(),
   desc: z.string(),
-  coinlist: z.array(CoinListItemSchema),
+  coinlist: z.array(CoinListItemSchema).optional(),
 })
 export type LevelListItem = z.infer<typeof LevelListItemSchema>
 
