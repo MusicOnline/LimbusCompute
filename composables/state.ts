@@ -1,17 +1,27 @@
-import type { SinnerIdentityJson } from "~/entities/SinnerIdentity"
-import type { SinnerSkillJson } from "~/entities/SinnerSkill"
-import type { SinnerSkillLocaleJson } from "~/entities/locales/SinnerSkill"
+export const useCustomEnemySkill = () =>
+  useState<ComputeClashSkillStats>("customEnemySkill", () => ({
+    basePower: 13,
+    numCoins: 3,
+    coinPower: 2,
+    sanity: 0,
+    offenseLevel: 40,
+    finalClashPowerModifier: 0,
+    paralyzeCount: 0,
+  }))
 
-export const useSinnerToIdentityData = () =>
-  useState<{
-    [key: string]: SinnerIdentityJson
-  }>("sinnerToIdentityData", () => ({}))
+export const useCustomSinnerSkill = () =>
+  useState<SkillStats>("customSinnerSkill", () => ({
+    basePower: 6,
+    numCoins: 3,
+    coinPower: 4,
+    offenseLevel: 40,
+    finalClashPowerModifier: 0,
+  }))
 
-export const useSinnerToSkillData = () =>
-  useState<{ [key: string]: SinnerSkillJson }>("sinnerToSkillData", () => ({}))
-
-export const useSinnerToSkillLocale = () =>
-  useState<{ [key: string]: SinnerSkillLocaleJson }>(
-    "sinnerToSkillLocale",
-    () => ({})
-  )
+export const useCustomSinnerStats = () =>
+  useState<SinnerStats>("customSinnerStats", () => ({
+    uptie: 4,
+    level: 40,
+    sanity: 40,
+    paralyzeCount: 0,
+  }))

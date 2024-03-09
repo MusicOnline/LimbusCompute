@@ -9,6 +9,7 @@ useHead({
 
 <template>
   <div>
+    <Body class="bg-gray-100 dark:bg-gray-900" />
     <div class="flex flex-col justify-between">
       <div class="p-2">
         <NuxtPage class="mx-auto max-w-7xl" />

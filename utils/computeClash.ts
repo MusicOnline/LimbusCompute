@@ -1,7 +1,7 @@
-import { Clasher, CoinNumberState, type ClashResult } from "./entities"
+import { ClashSkill, CoinNumberState, type ClashResult } from "./entities"
 import { binomialPmf, matrixDot, matrixInverse, matrixSubtract } from "./math"
 
-export default (p1: Clasher, p2: Clasher): ClashResult => {
+export default (p1: ClashSkill, p2: ClashSkill): ClashResult => {
   const states: CoinNumberState[] = []
 
   let p1HighestParalyzeAtPrevCoinCount = null

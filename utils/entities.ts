@@ -1,3 +1,29 @@
+export interface SkillStats {
+  basePower: number
+  numCoins: number
+  coinPower: number
+  offenseLevel: number
+  finalClashPowerModifier: number
+}
+
+export interface ComputeClashSkillStats extends SkillStats {
+  sanity: number
+  paralyzeCount: number
+}
+
+export interface SinnerStats {
+  uptie: number
+  level: number
+  sanity: number
+  paralyzeCount: number
+}
+
+export interface ComparisonSinner extends SinnerStats {
+  identityOrEgoId: number
+  sinnerKey: string
+  skills: (SkillStats & { id: number })[]
+}
+
 export type ClashResult = {
   winRate: number
   states: CoinNumberState[]
@@ -9,11 +35,11 @@ export type ClashResult = {
   Bmatrix: number[][]
 }
 
-export class Clasher {
+export class ClashSkill implements ComputeClashSkillStats {
   basePower: number
   numCoins: number
-  sanity: number
   coinPower: number
+  sanity: number
   offenseLevel: number
   finalClashPowerModifier: number
   paralyzeCount: number
@@ -21,16 +47,16 @@ export class Clasher {
   constructor(
     basePower: number,
     numCoins: number,
-    sanity: number,
     coinPower: number,
+    sanity: number,
     offenseLevel: number,
     finalClashPowerModifier: number,
     paralyzeCount: number
   ) {
     this.basePower = basePower
     this.numCoins = numCoins
-    this.sanity = sanity
     this.coinPower = coinPower
+    this.sanity = sanity
     this.offenseLevel = offenseLevel
     this.finalClashPowerModifier = finalClashPowerModifier
     this.paralyzeCount = paralyzeCount
@@ -40,7 +66,7 @@ export class Clasher {
     return 0.5 + this.sanity / 100
   }
 
-  clashPower(heads: number, enemy?: Clasher): number {
+  clashPower(heads: number, enemy?: ClashSkill): number {
     if (heads > this.numCoins) {
       throw new Error(`Maximum number of heads is ${this.numCoins}`)
     }
