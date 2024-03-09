@@ -82,17 +82,20 @@ function getWinRate(skill: SkillStats): number {
         {{ getSinnerSkillName(sinner.sinnerKey, skill.id) }}
       </div>
       <div class="flex items-center">
-        <div class="text-2xl font-bold">
-          {{ skill.basePower }}
-        </div>
+        <div class="text-2xl font-bold">{{ skill.basePower }}</div>
+        <div class="ml-0.5">+</div>
         <div
-          class="flex ml-1.5 font-bold items-center bg-yellow-500 rounded-full w-10 h-10 text-gray-900"
+          class="flex ml-0.5 font-bold items-center bg-yellow-500 rounded-full w-10 h-10 text-gray-900"
         >
-          <div class="m-auto">
-            {{ skill.coinPower > 0 ? "+" : "-" }}{{ skill.coinPower }}
-          </div>
+          <input
+            type="number"
+            v-model="sinner.skills[index].coinPower"
+            class="w-8 inline-block hide-number-spinner text-center bg-yellow-100 rounded-md m-auto outline outline-1 outline-yellow-600"
+          />
         </div>
-        <div class="font-bold ml-0.5">×{{ skill.numCoins }}</div>
+        <div class="font-bold ml-0.5 text-yellow-500">
+          ×{{ skill.numCoins }}
+        </div>
         <div class="ml-1">({{ skill.offenseLevel }} Off. Lv.)</div>
         <label class="flex ml-1 items-center">
           + Final Mod:
@@ -127,3 +130,15 @@ function getWinRate(skill: SkillStats): number {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+.hide-number-spinner {
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  -moz-appearance: textfield;
+}
+</style>
