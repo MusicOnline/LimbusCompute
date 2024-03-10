@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ClashSkill } from "~/utils/entities"
+
 const { identityOrEgoId } = defineProps<{
   identityOrEgoId: number
 }>()

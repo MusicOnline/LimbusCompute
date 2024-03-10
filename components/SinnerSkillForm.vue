@@ -231,7 +231,7 @@ function updateCustomSinnerSkill() {
         />
       </ClientOnly>
     </div>
-    <div>
+    <div class="mt-1">
       <ClientOnly>
         <UButton
           class="font-bold"

@@ -76,13 +76,13 @@ useHead({
     </div>
     <div class="flex gap-4 flex-wrap">
       <SinnerSkillForm
-        class="p-2 rounded-lg bg-yellow-300 dark:bg-yellow-700 flex-grow"
+        class="p-2 h-fit rounded-lg bg-yellow-300 dark:bg-yellow-700 flex-grow"
       />
       <EnemySkillForm
-        class="p-2 rounded-lg bg-red-300 dark:bg-red-700 flex-grow"
+        class="p-2 h-fit rounded-lg bg-red-300 dark:bg-red-700 flex-grow"
       />
       <div
-        class="flex flex-col p-2 bg-blue-200 dark:bg-blue-800 rounded-lg gap-1 flex-grow md:w-96"
+        class="flex h-fit flex-col p-2 bg-blue-200 dark:bg-blue-800 rounded-lg gap-1 flex-grow md:w-96"
       >
         <h1 class="font-bold text-lg text-center">Comparisons</h1>
         <UDivider class="my-2" />
