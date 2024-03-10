@@ -165,8 +165,8 @@ useHead({
           Show Mathematical Proof (WIP)
         </label>
       </div>
-      <ClientOnly>
-        <div v-if="isMathematicalProofEnabled" class="overflow-x-auto">
+      <div v-if="isMathematicalProofEnabled" class="overflow-x-auto">
+        <ClientOnly>
           <p
             class="has-mathjax"
             :class="{ visible: isMathRendered, invisible: !isMathRendered }"
@@ -246,8 +246,39 @@ useHead({
           \\]`
             }}
           </p>
+        </ClientOnly>
+        <div class="flex flex-col gap-2 font-bold my-2">
+          <div class="flex items-center">
+            <img src="/img/ryoshu.png" class="w-28 h-28 block rounded-lg" />
+            <div class="speech-left p-2 ml-4 rounded-lg relative">Q.E.D.</div>
+          </div>
+          <div class="flex items-center">
+            <img src="/img/sinclair.png" class="w-28 h-28 block rounded-lg" />
+            <div class="speech-left p-2 ml-4 rounded-lg relative">
+              Quantitative Education Delivered.
+            </div>
+          </div>
         </div>
-      </ClientOnly>
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+.speech-left {
+  color: #fccf1c;
+  background: #8e0000;
+}
+
+.speech-left::after {
+  display: block;
+  width: 0;
+  content: "";
+  border: 6px solid transparent;
+  position: absolute;
+  border-right-color: #8e0000;
+  border-left: 0;
+  left: -6px;
+  top: calc(50% - 6px);
+}
+</style>
