@@ -86,6 +86,15 @@ export class ClashSkill implements ComputeClashSkillStats {
       this.finalClashPowerModifier
     )
   }
+
+  clashPowerRange(enemy?: ClashSkill): [number, number] {
+    const powerAtNoHeads = this.clashPower(0, enemy)
+    const powerAtMaxHeads = this.clashPower(this.numCoins, enemy)
+    return [
+      Math.min(powerAtNoHeads, powerAtMaxHeads),
+      Math.max(powerAtNoHeads, powerAtMaxHeads),
+    ]
+  }
 }
 
 export class CoinNumberState {

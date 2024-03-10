@@ -7,33 +7,13 @@ const stateTransitionDiagram = ref<HTMLElement | null>(null)
 const isMathRendered = ref<boolean>(false)
 const isMathematicalProofEnabled = ref<boolean>(false)
 
-const customSinnerStats = useCustomSinnerStats()
-const customSinnerSkill = useCustomSinnerSkill()
-const customEnemySkill = useCustomEnemySkill()
 const comparisonSinners = useComparisonSinners()
+const sinnerClashSkill = useCustomSinnerClashSkill()
+const enemyClashSkill = useCustomEnemyClashSkill()
 
 const clashResult = computed(() => {
-  const p1 = new ClashSkill(
-    customSinnerSkill.value.basePower,
-    customSinnerSkill.value.numCoins,
-    customSinnerSkill.value.coinPower,
-    customSinnerStats.value.sanity,
-    customSinnerSkill.value.offenseLevel,
-    customSinnerSkill.value.finalClashPowerModifier,
-    customSinnerStats.value.paralyzeCount
-  )
-  const p2 = new ClashSkill(
-    customEnemySkill.value.basePower,
-    customEnemySkill.value.numCoins,
-    customEnemySkill.value.coinPower,
-    customEnemySkill.value.sanity,
-    customEnemySkill.value.offenseLevel,
-    customEnemySkill.value.finalClashPowerModifier,
-    customEnemySkill.value.paralyzeCount
-  )
-
   console.time("Computed clash")
-  const result = computeClash(p1, p2)
+  const result = computeClash(sinnerClashSkill.value, enemyClashSkill.value)
   console.timeEnd("Computed clash")
   return result
 })
@@ -130,6 +110,28 @@ useHead({
         class="inline-block font-bold"
         :win-rate="clashResult.winRate"
       />
+    </div>
+    <UDivider class="my-2 " />
+    <div class="text-sm text-gray-600 dark:text-gray-400">
+      Note:
+      <ul class="list-disc">
+        <li class="ml-4">
+          The in-game win rate is deceiving as it is a naive calculation that is
+          entirely inaccurate when negative Coin Power skills are involved.
+        </li>
+        <li class="ml-4">
+          Some skills, passives and support passives may conditionally grant extra Coin Power
+          and Clash Power that is not accounted for by default in this
+          calculator. You may edit the values manually.
+        </li class="ml-4">
+        <li class="ml-4">
+          Some skills, passives and support passives may grant extra Coin Power
+          and Clash Power based on the in-game win rate and NOT the accurate win
+          rate calculation given here. See the passive of Ishmael's base Zayin
+          E.G.O "Snagharpoon". You may edit the values manually.
+        </li>
+        <li class="ml-4">A better win rate does not guarantee a clash win.</li>
+      </ul>
     </div>
     <UDivider class="my-2" />
     <div>

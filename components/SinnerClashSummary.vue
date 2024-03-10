@@ -12,7 +12,8 @@ const sinner = computed<ComparisonSinner>(
 if (!sinner.value)
   throw new Error(`Comparison sinner ${identityOrEgoId} does not exist`)
 
-const enemySkill = useCustomEnemySkill()
+const enemyClashSkill = useCustomEnemyClashSkill()
+
 const getSinnerIdentityName = useGetSinnerIdentityName()
 const getSinnerSkillName = useGetSinnerSkillName()
 const removeComparisonSinner = useRemoveComparisonSinner()
@@ -21,8 +22,8 @@ const sinnerName = computed<string>(
   () => SINNER_TO_NAME[<keyof typeof SINNER_TO_NAME>sinner.value.sinnerKey]
 )
 
-function getWinRate(skill: SkillStats): number {
-  const sinnerClashSkill = new ClashSkill(
+function getSinnerClashSkill(skill: SkillStats): ClashSkill {
+  return new ClashSkill(
     skill.basePower,
     skill.numCoins,
     skill.coinPower,
@@ -31,16 +32,15 @@ function getWinRate(skill: SkillStats): number {
     skill.finalClashPowerModifier,
     sinner.value.paralyzeCount
   )
-  const enemyClashSkill = new ClashSkill(
-    enemySkill.value.basePower,
-    enemySkill.value.numCoins,
-    enemySkill.value.coinPower,
-    enemySkill.value.sanity,
-    enemySkill.value.offenseLevel,
-    enemySkill.value.finalClashPowerModifier,
-    enemySkill.value.paralyzeCount
-  )
-  return computeClash(sinnerClashSkill, enemyClashSkill).winRate
+}
+
+function getWinRate(skill: SkillStats): number {
+  const sinnerClashSkill = getSinnerClashSkill(skill)
+  return computeClash(sinnerClashSkill, enemyClashSkill.value).winRate
+}
+function getSinnerClashPowerRange(skill: SkillStats): [number, number] {
+  const sinnerClashSkill = getSinnerClashSkill(skill)
+  return sinnerClashSkill.clashPowerRange(enemyClashSkill.value)
 }
 </script>
 
@@ -81,7 +81,7 @@ function getWinRate(skill: SkillStats): number {
       <div class="font-bold underline">
         {{ getSinnerSkillName(sinner.sinnerKey, skill.id) }}
       </div>
-      <div class="flex items-center">
+      <div class="flex flex-wrap items-center">
         <div class="text-2xl font-bold">{{ skill.basePower }}</div>
         <div class="ml-0.5">+</div>
         <div
@@ -96,16 +96,27 @@ function getWinRate(skill: SkillStats): number {
         <div class="font-bold ml-0.5 text-yellow-500">
           ×{{ skill.numCoins }}
         </div>
-        <div class="ml-1">({{ skill.offenseLevel }} Off. Lv.)</div>
-        <label class="flex ml-1 items-center">
+        <div class="ml-0.5 text-sm">({{ skill.offenseLevel }} Off. Lv.)</div>
+        <label class="flex ml-0.5 items-center text-sm">
           + Final Mod:
           <UInput
             color="blue"
             type="number"
+            size="2xs"
             v-model="sinner.skills[index].finalClashPowerModifier"
             class="ml-1 w-16 inline-block"
           />
         </label>
+        <div class="ml-1 text-sm">
+          =
+          <span class="font-bold">
+            {{ getSinnerClashPowerRange(skill)[0] }}
+          </span>
+          ~
+          <span class="font-bold">
+            {{ getSinnerClashPowerRange(skill)[1] }}
+          </span>
+        </div>
       </div>
       <div>
         Clash win rate:

@@ -1,5 +1,11 @@
 <script setup lang="ts">
 const customSkill = useCustomEnemySkill()
+const sinnerClashSkill = useCustomSinnerClashSkill()
+const enemyClashSkill = useCustomEnemyClashSkill()
+
+const enemyClashPowerRange = computed<[number, number]>(() =>
+  enemyClashSkill.value.clashPowerRange(sinnerClashSkill.value)
+)
 </script>
 
 <template>
@@ -78,6 +84,19 @@ const customSkill = useCustomEnemySkill()
         class="w-16 ml-1 font-bold inline-block"
       />
     </div>
+    <UDivider class="my-2" />
+    <div>
+      <span> Clash Power Range: </span>
+      <span class="font-bold">
+        {{ enemyClashPowerRange[0] }}
+      </span>
+      ~
+      <span class="font-bold">
+        {{ enemyClashPowerRange[1] }}
+      </span>
+    </div>
+    <UDivider class="my-2" />
+    <div>Note: Abnormalities have 0 Sanity.</div>
   </div>
 </template>
 

@@ -11,12 +11,14 @@ import {
 } from "~/entities/SinnerSkill"
 import { SinnerSkillLocaleJsonSchema } from "~/entities/locales/SinnerSkill"
 
-const customSkill = useCustomSinnerSkill()
-const customSinnerStats = useCustomSinnerStats()
-
 const sinnerToIdentityData = useSinnerToIdentityData()
 const sinnerToSkillData = useSinnerToSkillData()
 const sinnerToSkillLocale = useSinnerToSkillLocaleEn()
+
+const customSkill = useCustomSinnerSkill()
+const customSinnerStats = useCustomSinnerStats()
+const sinnerClashSkill = useCustomSinnerClashSkill()
+const enemyClashSkill = useCustomEnemyClashSkill()
 
 const isLoadingSinner = ref<boolean>(false)
 const selectedSinnerKey = ref<keyof typeof SINNER_TO_NUMBER | null>(null)
@@ -74,6 +76,10 @@ const skillsForSelect = computed<{ value: number; label: string }[]>(() => {
       `Skill ${skill.id}`,
   }))
 })
+
+const sinnerClashPowerRange = computed<[number, number]>(() =>
+  sinnerClashSkill.value.clashPowerRange(enemyClashSkill.value)
+)
 
 async function changeSinnerAndFetchData() {
   selectedSinnerIdentityId.value = null
@@ -182,6 +188,7 @@ function updateCustomSinnerSkill() {
         v-model="selectedSinnerKey"
         @change="changeSinnerAndFetchData()"
         class="ml-1 font-bold flex-grow"
+        :ui-menu="{ height: 'max-h-fit' }"
         :options="Object.entries(SINNER_TO_NAME)"
         option-attribute="1"
         value-attribute="0"
@@ -199,6 +206,7 @@ function updateCustomSinnerSkill() {
           "
           @change="selectedSinnerSkillId = null"
           class="ml-1 font-bold flex-grow"
+          :ui-menu="{ height: 'max-h-fit' }"
           :options="identitiesForSelect"
           value-attribute="value"
         />
@@ -309,6 +317,17 @@ function updateCustomSinnerSkill() {
         v-model.number="customSinnerStats.paralyzeCount"
         class="w-16 ml-1 font-bold inline-block"
       />
+    </div>
+    <UDivider class="my-2" />
+    <div>
+      <span> Clash Power Range: </span>
+      <span class="font-bold">
+        {{ sinnerClashPowerRange[0] }}
+      </span>
+      ~
+      <span class="font-bold">
+        {{ sinnerClashPowerRange[1] }}
+      </span>
     </div>
   </div>
 </template>
