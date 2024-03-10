@@ -111,19 +111,21 @@ useHead({
         :win-rate="clashResult.winRate"
       />
     </div>
-    <UDivider class="my-2 " />
+    <UDivider class="my-2" />
     <div class="text-sm text-gray-600 dark:text-gray-400">
       Note:
       <ul class="list-disc">
         <li class="ml-4">
-          The in-game win rate is deceiving as it is a naive calculation that is
-          entirely inaccurate when negative Coin Power skills are involved.
+          The in-game win rate is deceiving as it is a naive calculation that
+          does not account for clashes after losing a coin (which you may still
+          win) and is entirely inaccurate when negative Coin Power skills are
+          involved.
         </li>
         <li class="ml-4">
-          Some skills, passives and support passives may conditionally grant extra Coin Power
-          and Clash Power that is not accounted for by default in this
-          calculator. You may edit the values manually.
-        </li class="ml-4">
+          Some skills, passives and support passives may conditionally grant
+          extra Coin Power and Clash Power that is not accounted for by default
+          in this calculator. You may edit the values manually.
+        </li>
         <li class="ml-4">
           Some skills, passives and support passives may grant extra Coin Power
           and Clash Power based on the in-game win rate and NOT the accurate win
