@@ -1,3 +1,9 @@
+import { execSync } from "child_process"
+
+function runTerminal(command: string): string {
+  return execSync(command).toString().trim()
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
@@ -34,9 +40,24 @@ export default defineNuxtConfig({
   ssr: process.env.ENABLE_SSR?.toLowerCase() === "true",
   modules: ["@nuxt/ui"],
   devtools: { enabled: true },
+  ui: {
+    icons: ["heroicons", "mdi", "logos", "emojione"],
+  },
   runtimeConfig: {
     public: {
       fullBaseUrl: process.env.NUXT_PUBLIC_FULL_BASE_URL,
+      commit: {
+        id:
+          process.env.NUXT_PUBLIC_COMMIT_ID ||
+          runTerminal("git log --format=%h -n 1"),
+        message:
+          process.env.NUXT_PUBLIC_COMMIT_MESSAGE ||
+          runTerminal("git log --format=%s -n 1"),
+        timestamp:
+          process.env.NUXT_PUBLIC_COMMIT_TIMESTAMP ||
+          runTerminal("git log --format=%ct -n 1"),
+        baseUrl: process.env.NUXT_PUBLIC_COMMIT_BASE_URL,
+      },
     },
   },
 })

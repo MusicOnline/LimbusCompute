@@ -43,6 +43,9 @@ NUXT_APP_BASE_URL=/RepositoryNameHere/
 # For generating SEO meta tags that require the base URL including the domain name
 # Omit the trailing slash
 NUXT_PUBLIC_FULL_BASE_URL=http://localhost:3000
+
+# Optional git remote repository commit base URL
+NUXT_PUBLIC_COMMIT_BASE_URL=https://github.com/MusicOnline/LimbusCompute/commit
 ```
 
 ### Development Server
@@ -92,3 +95,9 @@ Additionally, any pushes to the main branch of this repository will trigger the 
 GitHub Pages Mirror: https://musiconline.github.io/LimbusCompute/
 
 Artifacts for both builds are available for download in their respective GitHub Actions pages.
+
+## Special Thanks
+
+In no particular order:
+
+- [SyxP](https://github.com/SyxP) ([ObiterDicta.jl](https://github.com/SyxP/ObiterDicta.jl))

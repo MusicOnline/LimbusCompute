@@ -52,6 +52,10 @@ useHead({
       <div class="p-2">
         <NuxtPage class="mx-auto max-w-7xl" />
       </div>
+      <div class="relative w-full pt-4">
+        <UDivider class="mx-auto max-w-7xl" />
+        <Footer class="mx-auto w-full max-w-7xl px-2 py-4 md:py-8" />
+      </div>
     </div>
   </div>
 </template>
