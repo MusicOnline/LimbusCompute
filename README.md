@@ -101,3 +101,4 @@ Artifacts for both builds are available for download in their respective GitHub 
 In no particular order:
 
 - [SyxP](https://github.com/SyxP) ([ObiterDicta.jl](https://github.com/SyxP/ObiterDicta.jl))
+- Twig (understanding & checking game mechanics)
