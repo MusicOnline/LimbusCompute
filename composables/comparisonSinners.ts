@@ -33,7 +33,12 @@ export const useAddComparisonSinner = () => {
     const skills: (SkillStats & { id: number })[] = getSinnerIdentitySkills(
       sinnerKey,
       sinnerIdentityValue
-    ).map((skill) => {
+    ).flatMap((skill) => {
+      if (
+        skill.requireIDList.includes("CheckAwakenLevel3") &&
+        customSinnerStats.value.uptie < 3
+      )
+        return []
       const skillStats = getSinnerSkillRawDataAtUptie(
         skill,
         customSinnerStats.value.uptie

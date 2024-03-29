@@ -45,10 +45,19 @@ const sinnerIdentitySkills = computed<SinnerSkill[]>(() => {
   )
 })
 
-const sinnerSkillRawDataAtUptie = computed<SkillDataItem | null>(() => {
+const sinnerSkillRawData = computed<SinnerSkill | null>(() => {
   if (!selectedSinnerKey.value || !selectedSinnerSkillId.value) return null
-  const skill = getSinnerSkill(selectedSinnerKey, selectedSinnerSkillId)
+  return getSinnerSkill(selectedSinnerKey, selectedSinnerSkillId)
+})
+
+const sinnerSkillRawDataAtUptie = computed<SkillDataItem | null>(() => {
+  const skill = sinnerSkillRawData.value
   if (!skill) return null
+  if (
+    skill.requireIDList.includes("CheckAwakenLevel3") &&
+    customSinnerStats.value.uptie < 3
+  )
+    return null
   return getSinnerSkillRawDataAtUptie(skill, customSinnerStats.value.uptie)
 })
 
@@ -136,6 +145,16 @@ async function changeSinnerAndFetchData() {
 }
 
 function updateCustomSinnerSkill() {
+  const skill = sinnerSkillRawData.value
+  if (!skill) return
+  if (
+    skill.requireIDList.includes("CheckAwakenLevel3") &&
+    customSinnerStats.value.uptie < 3
+  )
+    nextTick(() => {
+      customSinnerStats.value.uptie = 3
+      updateCustomSinnerSkill()
+    })
   if (!sinnerSkillRawDataAtUptie.value) return
 
   customSkill.value.basePower = sinnerSkillRawDataAtUptie.value.defaultValue
@@ -148,6 +167,20 @@ function updateCustomSinnerSkill() {
     customSinnerStats.value.level +
     sinnerSkillRawDataAtUptie.value.skillLevelCorrection
 }
+
+watch(
+  () => customSinnerStats.value.uptie,
+  () => {
+    if (customSinnerStats.value.uptie < 1) customSinnerStats.value.uptie = 1
+    if (customSinnerStats.value.uptie > 4) customSinnerStats.value.uptie = 4
+  }
+)
+watch(
+  () => customSinnerStats.value.level,
+  () => {
+    if (customSinnerStats.value.level < 1) customSinnerStats.value.level = 1
+  }
+)
 </script>
 
 <template>
@@ -175,7 +208,7 @@ function updateCustomSinnerSkill() {
         id="sinnerStatsLevel"
         v-model.number="customSinnerStats.level"
         min="1"
-        max="40"
+        max="60"
         @update:model-value="updateCustomSinnerSkill()"
         class="w-16 ml-1 font-bold inline-block"
       />
