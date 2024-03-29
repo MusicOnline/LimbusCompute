@@ -163,7 +163,7 @@ function updateCustomSinnerSkill() {
         v-model.number="customSinnerStats.uptie"
         min="1"
         max="4"
-        @change="updateCustomSinnerSkill()"
+        @update:model-value="updateCustomSinnerSkill()"
         class="w-16 ml-1 font-bold inline-block"
       />
     </div>
@@ -176,7 +176,7 @@ function updateCustomSinnerSkill() {
         v-model.number="customSinnerStats.level"
         min="1"
         max="40"
-        @change="updateCustomSinnerSkill()"
+        @update:model-value="updateCustomSinnerSkill()"
         class="w-16 ml-1 font-bold inline-block"
       />
     </div>
@@ -186,7 +186,7 @@ function updateCustomSinnerSkill() {
         color="yellow"
         id="sinnerCharacter"
         v-model="selectedSinnerKey"
-        @change="changeSinnerAndFetchData()"
+        @update:model-value="changeSinnerAndFetchData()"
         class="ml-1 font-bold flex-grow"
         :ui-menu="{ height: 'max-h-fit' }"
         :options="Object.entries(SINNER_TO_NAME)"
@@ -204,7 +204,7 @@ function updateCustomSinnerSkill() {
           :disabled="
             !selectedSinnerKey || !sinnerToIdentityData[selectedSinnerKey]
           "
-          @change="selectedSinnerSkillId = null"
+          @update:model-value="selectedSinnerSkillId = null"
           class="ml-1 font-bold flex-grow"
           :ui-menu="{ height: 'max-h-fit' }"
           :options="identitiesForSelect"
@@ -224,7 +224,7 @@ function updateCustomSinnerSkill() {
             !sinnerToIdentityData[selectedSinnerKey] ||
             !sinnerToSkillData[selectedSinnerKey]
           "
-          @change="updateCustomSinnerSkill()"
+          @update:model-value="updateCustomSinnerSkill()"
           :options="skillsForSelect"
           value-attribute="value"
           class="ml-1 font-bold flex-grow"

@@ -9,7 +9,6 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "nuxt": "^3.10.3",
     "vue": "^3.4.19",
     "vue-router": "^4.3.0"
   },
@@ -20,8 +19,9 @@
     "@iconify-json/emojione": "^1.1.10",
     "@iconify-json/logos": "^1.1.42",
     "@iconify-json/mdi": "^1.1.64",
-    "@nuxt/ui": "^2.14.2",
+    "@nuxt/ui": "^2.15.0",
     "@viz-js/viz": "^3.4.0",
+    "nuxt": "^3.11.1",
     "sass": "^1.71.1",
     "zod": "^3.22.4"
   }
