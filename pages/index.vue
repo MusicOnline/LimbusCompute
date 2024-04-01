@@ -149,23 +149,46 @@ useHead({
         will change into a (1, 3) scenario.
       </p>
       <div class="overflow-x-auto">
-        <div ref="stateTransitionDiagram"></div>
+        <div class="mx-auto w-fit" ref="stateTransitionDiagram"></div>
       </div>
       <p>
         Note: The graph may be disconnected if some values are too close to zero
         due to insufficient precision.
       </p>
       <div>
-        <input
-          id="showMathematicalProofCheckbox"
-          type="checkbox"
-          v-model="isMathematicalProofEnabled"
-        />
-        <label for="showMathematicalProofCheckbox">
+        <UButton
+          v-if="isMathematicalProofEnabled"
+          class="font-bold my-2"
+          icon="i-heroicons-eye-slash"
+          color="red"
+          variant="soft"
+          @click="isMathematicalProofEnabled = false"
+        >
+          Hide Mathematical Proof
+        </UButton>
+        <UButton
+          v-else
+          class="font-bold my-2"
+          icon="i-heroicons-eye"
+          variant="soft"
+          @click="isMathematicalProofEnabled = true"
+        >
           Show Mathematical Proof (WIP)
-        </label>
+        </UButton>
       </div>
       <div v-if="isMathematicalProofEnabled" class="overflow-x-auto">
+        <div v-if="!isMathRendered" class="flex flex-col gap-2 w-full">
+          <USkeleton class="h-4" />
+          <USkeleton class="h-4" />
+          <USkeleton class="h-96 w-96 mx-auto" />
+          <USkeleton class="h-96" />
+          <USkeleton class="h-96" />
+          <USkeleton class="h-96" />
+          <USkeleton class="h-96" />
+          <USkeleton class="h-96" />
+          <USkeleton class="h-96" />
+          <USkeleton class="h-96" />
+        </div>
         <ClientOnly>
           <p
             class="has-mathjax"
@@ -247,18 +270,33 @@ useHead({
             }}
           </p>
         </ClientOnly>
-        <div class="flex flex-col gap-2 font-bold my-2">
-          <div class="flex items-center">
-            <img src="/img/ryoshu.png" class="w-28 h-28 block rounded-lg" />
-            <div class="speech-left p-2 ml-4 rounded-lg relative">Q.E.D.</div>
-          </div>
-          <div class="flex items-center">
-            <img src="/img/sinclair.png" class="w-28 h-28 block rounded-lg" />
-            <div class="speech-left p-2 ml-4 rounded-lg relative">
-              Quantitative Education Delivered.
-            </div>
+      </div>
+      <div
+        v-if="isMathematicalProofEnabled"
+        class="flex flex-col gap-2 font-bold my-2"
+      >
+        <div class="flex items-center">
+          <img src="/img/ryoshu.png" class="w-28 h-28 block rounded-lg" />
+          <div class="speech-left p-2 ml-4 rounded-lg relative">Q.E.D.</div>
+        </div>
+        <div class="flex items-center">
+          <img src="/img/sinclair.png" class="w-28 h-28 block rounded-lg" />
+          <div class="speech-left p-2 ml-4 rounded-lg relative">
+            Quantitative Education Delivered.
           </div>
         </div>
+      </div>
+      <div>
+        <UButton
+          v-if="isMathematicalProofEnabled"
+          class="font-bold my-2"
+          icon="i-heroicons-eye-slash"
+          color="red"
+          variant="soft"
+          @click="isMathematicalProofEnabled = false"
+        >
+          Hide Mathematical Proof
+        </UButton>
       </div>
     </div>
   </div>
